@@ -1,0 +1,24 @@
+﻿# Variables de entorno y credenciales
+.env
+.env.*
+!.env.example
+
+# Dependencias
+node_modules/
+
+# Archivos temporales
+*.log
+logs/
+coverage/
+.nyc_output/
+
+# Archivos generados
+dist/
+dist-obfuscated/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/

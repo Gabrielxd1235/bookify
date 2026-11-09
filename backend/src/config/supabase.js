@@ -1,16 +1,16 @@
 
 const { createClient } = require("@supabase/supabase-js");
 
-// Credenciales privadas del backend
+// Private backend credentials
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SECRET_KEY;
 
-// Verificar la configuración antes de conectarnos
+// Validate configuration before connecting
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Faltan las credenciales de Supabase en .env");
+  throw new Error("Missing Supabase credentials in .env");
 }
 
-// Cliente de Supabase, exclusivo del servidor
+// Server-only Supabase client
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: false,

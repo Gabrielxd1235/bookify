@@ -2,27 +2,27 @@
 const jwt = require("jsonwebtoken");
 const supabase = require("../config/supabase");
 
-// Verificar la autenticación del usuario
+// Verify user authentication
 const verifyToken = async (req, res, next) => {
   try {
     const authorization = req.headers.authorization;
 
-    // 1. Verificar que exista el encabezado Bearer
+    // 1. Check for a Bearer authorization header
     if (
       !authorization ||
       !/^Bearer \S+$/i.test(authorization)
     ) {
       return res.status(401).json({
         success: false,
-        message: "Token de autenticación requerido"
+        message: "Authentication token required"
       });
     }
 
     const token = authorization.split(" ")[1];
 
-    // 2. Comprobar la firma y expiración del JWT
+    // 2. Verify the JWT signature and expiration
     if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET no configurado");
+      throw new Error("JWT_SECRET is not configured");
     }
 
     let decoded;
@@ -34,22 +34,22 @@ const verifyToken = async (req, res, next) => {
     } catch (error) {
       return res.status(401).json({
         success: false,
-        message: "Token inválido o expirado"
+        message: "Invalid or expired token"
       });
     }
 
-    // 3. Verificar que el token tenga un ID válido
+    // 3. Check that the token contains a valid ID
     if (
       typeof decoded !== "object" ||
       !/^[1-9]\d*$/.test(decoded.sub || "")
     ) {
       return res.status(401).json({
         success: false,
-        message: "Token inválido"
+        message: "Invalid token"
       });
     }
 
-    // 4. Comprobar que el usuario aún exista
+    // 4. Check that the user still exists
     const { data: user, error } = await supabase
       .from("users")
       .select("id, full_name, email, role, is_active")
@@ -57,40 +57,40 @@ const verifyToken = async (req, res, next) => {
       .maybeSingle();
 
     if (error) {
-      console.error("Error verificando usuario:", error.message);
+      console.error("Error verifying user:", error.message);
 
       return res.status(503).json({
         success: false,
-        message: "No se pudo verificar la sesión"
+        message: "Unable to verify the session"
       });
     }
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Sesión no válida"
+        message: "Invalid session"
       });
     }
 
-    // 5. Impedir el acceso a cuentas deshabilitadas
+    // 5. Block access for disabled accounts
     if (!user.is_active) {
       return res.status(403).json({
         success: false,
-        message: "Cuenta deshabilitada"
+        message: "Account disabled"
       });
     }
 
-    // 6. Adjuntar el usuario validado a la petición
+    // 6. Attach the verified user to the request
     req.user = user;
 
     next();
 
   } catch (error) {
-    console.error("Error de autenticación:", error.message);
+    console.error("Authentication error:", error.message);
 
     return res.status(500).json({
       success: false,
-      message: "Error interno de autenticación"
+      message: "Internal authentication error"
     });
   }
 };

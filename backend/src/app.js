@@ -1,51 +1,188 @@
+// Environment configuration
+require("dotenv").config();
 
+// Main dependencies
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
-require("dotenv").config();
+const path = require("node:path");
+
+// Database connection
 const supabase = require("./config/supabase");
+
+// API routes
 const authRoutes = require("./routes/auth.routes");
 const roleRoutes = require("./routes/role.routes");
 const categoryRoutes = require("./routes/category.routes");
-const path = require("node:path");
+const businessRoutes = require("./routes/business.routes");
+const serviceRoutes = require("./routes/service.routes");
+const businessHoursRoutes = require("./routes/businessHours.routes");
+const reservationRoutes = require("./routes/reservation.routes");
+const paymentRoutes = require("./routes/payment.routes");
+const adminRoutes = require("./routes/admin.routes");
 
+// Background jobs
+const {
+  startReservationExpiryJob
+} = require("./jobs/reservationExpiry.job");
+
+// Initialize Express
 const app = express();
 
-// Middleware de seguridad
+// Security middleware
 app.use(helmet());
-app.use(cors({ origin: "http://localhost:5173" }));
-app.use(express.json({ limit: "10kb" }));
 
-// Limitar solicitudes para proteger la API
-app.use("/api", rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 100,
-  standardHeaders: "draft-8",
-  legacyHeaders: false
+// Configure allowed frontend origins
+const allowedOrigins = (
+  process.env.FRONTEND_URL || "http://localhost:5173"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+// Configure CORS
+app.use(cors({
+  origin: (origin, callback) => {
+
+    // Allow requests without Origin, but do not add CORS headers
+    if (!origin) {
+      return callback(null, false);
+    }
+
+    // Allow registered frontend origins
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, origin);
+    }
+
+    // Do not authorize unexpected origins
+    return callback(null, false);
+  },
+
+  credentials: true,
+
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS"
+  ],
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization"
+  ]
 }));
 
+// Parse JSON request bodies
+app.use(express.json({
+  limit: "10kb"
+}));
 
+// Parse authentication cookies
+app.use(cookieParser());
 
-// Endpoint para comprobar que el servidor funciona
+// Check whether the request comes from localhost
+function isLocalRequest(req) {
+  const localAddresses = [
+    "127.0.0.1",
+    "::1",
+    "::ffff:127.0.0.1"
+  ];
+
+  return localAddresses.includes(req.ip);
+}
+
+// Validate rate limiter configuration
+const configuredWindow = Number(
+  process.env.RATE_LIMIT_WINDOW_MS || 900000
+);
+
+const configuredLimit = Number(
+  process.env.RATE_LIMIT_MAX || 20000
+);
+
+const rateLimitWindow =
+  Number.isSafeInteger(configuredWindow) &&
+  configuredWindow > 0
+    ? configuredWindow
+    : 900000;
+
+const rateLimitMax =
+  Number.isSafeInteger(configuredLimit) &&
+  configuredLimit > 0
+    ? configuredLimit
+    : 100;
+
+// Configure API rate limiting
+const apiLimiter = rateLimit({
+  windowMs: rateLimitWindow,
+
+  limit: rateLimitMax,
+
+  // Skip limits only for local load testing
+  skip: (req) => {
+    return (
+      process.env.NODE_ENV === "loadtest" &&
+      isLocalRequest(req)
+    );
+  },
+
+  standardHeaders: "draft-8",
+
+  legacyHeaders: false,
+
+  message: {
+    success: false,
+    message: "Too many requests. Please try again later."
+  }
+});
+
+// Apply rate limiting to API routes
+app.use("/api", apiLimiter);
+
+// Health check
 app.get("/api/health", (req, res) => {
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
-    message: "API de BOOKIFY funcionando",
+    message: "BOOKIFY API is running",
     status: "OK"
   });
 });
-// Rutas de autenticación
+
+// Authentication routes
 app.use("/api/auth", authRoutes);
-// Rutas protegidas por roles
+
+// Role-based dashboard routes
 app.use("/api/dashboard", roleRoutes);
-// CRUD inicial de categorías
+
+// Category management
 app.use("/api/categories", categoryRoutes);
 
- // BOOKIFY - Prueba temporal de conexión
+// Business management
+app.use("/api/businesses", businessRoutes);
+
+// Service management
+app.use("/api/services", serviceRoutes);
+
+// Business hours management
+app.use("/api/businesses", businessHoursRoutes);
+
+// Reservation management
+app.use("/api/reservations", reservationRoutes);
+
+// Payment management
+app.use("/api/payments", paymentRoutes);
+
+// Administrator management
+app.use("/api/admin", adminRoutes);
+
+// Database connection check
 app.get("/api/db-check", async (req, res) => {
   try {
-    // Consultar el número de categorías registradas
     const { count, error } = await supabase
       .from("categories")
       .select("*", {
@@ -53,103 +190,155 @@ app.get("/api/db-check", async (req, res) => {
         head: true
       });
 
-    // Controlar errores de Supabase
     if (error) {
-      console.error("Error Supabase:", error.message);
+      console.error(
+        "Database check failed:",
+        error.message
+      );
 
       return res.status(503).json({
         success: false,
-        message: "No se pudo consultar la base de datos"
+        message: "Unable to query the database"
       });
     }
 
-    // Conexión satisfactoria
     return res.status(200).json({
       success: true,
-      message: "Conexión con Supabase correcta",
+      message: "Successfully connected to Supabase",
       database: "bookify-db",
-      totalCategorias: count
+      totalCategories: count
     });
 
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error(
+      "Database connection error:",
+      error.message
+    );
 
     return res.status(503).json({
       success: false,
-      message: "Base de datos no disponible"
+      message: "Database unavailable"
     });
   }
 });
 
-
-// Página temporal: sección en desarrollo
-app.get("/en-desarrollo", (req, res) => {
-  res.status(200).sendFile(
-    path.join(__dirname, "../public/en-desarrollo.html")
+// Under development page
+app.get("/under-development", (req, res) => {
+  return res.status(200).sendFile(
+    path.join(
+      __dirname,
+      "../public/under-development.html"
+    )
   );
 });
 
-// Manejar rutas que no existen
+// Handle unknown routes
 app.use((req, res) => {
-  // La API siempre devuelve errores en JSON
-  if (req.path === "/api" || req.path.startsWith("/api/")) {
+
+  // Handle unknown API routes
+  if (
+    req.path === "/api" ||
+    req.path.startsWith("/api/")
+  ) {
     return res.status(404).json({
       success: false,
-      message: "Ruta no encontrada"
+      message: "Route not found"
     });
   }
 
-  // Mostrar página visual en solicitudes del navegador
+  // Display the HTML 404 page
   if (
     req.method === "GET" &&
-    req.accepts("html") &&
     req.headers.accept?.includes("text/html")
   ) {
     return res.status(404).sendFile(
-      path.join(__dirname, "../public/404.html")
+      path.join(
+        __dirname,
+        "../public/404.html"
+      )
     );
   }
 
   return res.status(404).json({
     success: false,
-    message: "Ruta no encontrada"
+    message: "Route not found"
   });
 });
 
-// Manejo centralizado de errores de Express
+// Centralized error handling
 app.use((err, req, res, next) => {
+
   if (res.headersSent) {
     return next(err);
   }
 
-  // JSON inválido enviado por el cliente
-  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+  // Handle invalid JSON
+  if (
+    err instanceof SyntaxError &&
+    err.status === 400 &&
+    "body" in err
+  ) {
     return res.status(400).json({
       success: false,
-      message: "El cuerpo JSON de la solicitud no es válido"
+      message: "The request body contains invalid JSON"
     });
   }
 
-  // Solicitud demasiado grande
+  // Handle oversized request bodies
   if (err.status === 413) {
     return res.status(413).json({
       success: false,
-      message: "La solicitud supera el tamaño permitido"
+      message: "The request exceeds the allowed size"
     });
   }
 
-  console.error("Error de Express:", err.message);
+  // Handle unexpected errors
+  console.error(
+    "Express error:",
+    err.message
+  );
 
   return res.status(500).json({
     success: false,
-    message: "Error interno del servidor"
+    message: "Internal server error"
   });
 });
 
-
-// Iniciar servidor
+// Start the server
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`BOOKIFY API: http://localhost:${PORT}`);
-});
+if (require.main === module) {
+
+  // Bind load testing exclusively to localhost
+  const HOST =
+    process.env.NODE_ENV === "loadtest"
+      ? "127.0.0.1"
+      : (process.env.HOST || "0.0.0.0");
+
+  app.listen(PORT, HOST, () => {
+
+    console.log(
+      `BOOKIFY API: http://localhost:${PORT}`
+    );
+
+    console.log(
+      `Environment: ${process.env.NODE_ENV || "development"}`
+    );
+
+    console.log(
+      `Rate limit: ${rateLimitMax} requests`
+    );
+
+    console.log(
+      `Rate limit window: ${rateLimitWindow} ms`
+    );
+
+    // Start automatic reservation expiration
+    if (process.env.NODE_ENV !== "test") {
+      startReservationExpiryJob();
+    }
+  });
+}
+
+// Export Express for automated tests
+module.exports = app;

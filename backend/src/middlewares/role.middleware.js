@@ -1,26 +1,26 @@
 
- // BOOKIFY - Middleware de autorización por roles
+ // BOOKIFY - Role-based authorization middleware
 
 const requireRole = (...allowedRoles) => {
   return (req, res, next) => {
 
-    // Comprobar que exista un usuario autenticado
+    // Check for an authenticated user
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: "Autenticación requerida"
+        message: "Authentication required"
       });
     }
 
-    // Revisar si su rol está autorizado
+    // Check whether the user's role is authorized
     if (!allowedRoles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: "No tienes permisos para acceder a este recurso"
+        message: "You do not have permission to access this resource"
       });
     }
 
-    // Permitir que continúe la solicitud
+    // Allow the request to continue
     next();
   };
 };

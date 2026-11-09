@@ -1,10 +1,11 @@
-
 const express = require("express");
 
 const {
   getCategories,
   getCategoryById,
-  createCategory
+  createCategory,
+  updateCategory,
+  deleteCategory
 } = require("../controllers/category.controller");
 
 const {
@@ -17,16 +18,30 @@ const {
 
 const router = express.Router();
 
-// Consultas públicas
+// Public endpoints
 router.get("/", getCategories);
 router.get("/:id", getCategoryById);
 
-// Crear categoría: solo administradores
+// ADMIN-only endpoints
 router.post(
   "/",
   verifyToken,
   requireRole("ADMIN"),
   createCategory
+);
+
+router.put(
+  "/:id",
+  verifyToken,
+  requireRole("ADMIN"),
+  updateCategory
+);
+
+router.delete(
+  "/:id",
+  verifyToken,
+  requireRole("ADMIN"),
+  deleteCategory
 );
 
 module.exports = router;

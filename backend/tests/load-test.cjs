@@ -5,7 +5,7 @@ const BASE_URL = "http://localhost:3000";
 const TIMEOUT_MS = 10000;
 
 async function runTest(totalRequests) {
-  console.log(`\n===== BOOKIFY: ${totalRequests} PETICIONES =====`);
+  console.log(`\n===== BOOKIFY: ${totalRequests} REQUESTS =====`);
 
   const results = [];
   const start = performance.now();
@@ -49,22 +49,22 @@ async function runTest(totalRequests) {
     statusCounts[result.status] = (statusCounts[result.status] || 0) + 1;
   }
 
-  console.log("Total de peticiones:", totalRequests);
+  console.log("Total requests:", totalRequests);
   console.log("HTTP 200:", successful);
-  console.log("Fallidas o no HTTP 200:", failed);
-  console.log("Tiempo total:", totalTime.toFixed(2), "segundos");
-  console.log("Tiempo promedio:", average.toFixed(2), "ms");
-  console.log("Tiempo máximo:", Math.max(...durations).toFixed(2), "ms");
-  console.log("Percentil 95:", p95.toFixed(2), "ms");
-  console.log("Peticiones por segundo:", (totalRequests / totalTime).toFixed(2));
-  console.log("Códigos HTTP:", statusCounts);
+  console.log("Failed or non-HTTP 200 requests:", failed);
+  console.log("Total time:", totalTime.toFixed(2), "seconds");
+  console.log("Average time:", average.toFixed(2), "ms");
+  console.log("Maximum time:", Math.max(...durations).toFixed(2), "ms");
+  console.log("95th percentile:", p95.toFixed(2), "ms");
+  console.log("Requests per second:", (totalRequests / totalTime).toFixed(2));
+  console.log("HTTP status codes:", statusCounts);
 
   return { totalRequests, successful, failed };
 }
 
 (async () => {
   await runTest(50);
-  console.log("\nEsperando 3 segundos...");
+  console.log("\nWaiting 3 seconds...");
   await new Promise(resolve => setTimeout(resolve, 3000));
   await runTest(100);
 })().catch(console.error);

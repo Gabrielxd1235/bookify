@@ -1,0 +1,179 @@
+{
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "Login is successful": {
+                    "name": "Login is successful",
+                    "path": "::Login is successful",
+                    "id": "389fbbdbf6feb1e9cca47c4214ad6df6",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "Valid access token is accepted": {
+                    "name": "Valid access token is accepted",
+                    "path": "::Valid access token is accepted",
+                    "id": "cbe598eca928eb9c1c1570a979e2030d",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "Expired access token returns HTTP 401": {
+                    "name": "Expired access token returns HTTP 401",
+                    "path": "::Expired access token returns HTTP 401",
+                    "id": "0c244e3c5a4e638169690e6855ea1b42",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "Refresh token renews the session": {
+                    "passes": 1,
+                    "fails": 0,
+                    "name": "Refresh token renews the session",
+                    "path": "::Refresh token renews the session",
+                    "id": "3c58411a9df01278841ef4625af402d9"
+                },
+                "Renewed access token is accepted": {
+                    "name": "Renewed access token is accepted",
+                    "path": "::Renewed access token is accepted",
+                    "id": "b374f280d5e4ac7f2e2d0cba234e05c1",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "Logout is successful": {
+                    "name": "Logout is successful",
+                    "path": "::Logout is successful",
+                    "id": "20903716625759dbe678f18c376fa5c8",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "Refresh after logout returns HTTP 401": {
+                    "name": "Refresh after logout returns HTTP 401",
+                    "path": "::Refresh after logout returns HTTP 401",
+                    "id": "3d8bdb10a86e9901d501f883ac52a94b",
+                    "passes": 1,
+                    "fails": 0
+                }
+            },
+        "name": ""
+    },
+    "metrics": {
+        "vus": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "dropped_iterations": {
+            "count": 0,
+            "rate": 0,
+            "thresholds": {
+                "count==0": false
+            }
+        },
+        "http_reqs": {
+            "count": 7,
+            "rate": 0.840725098494248
+        },
+        "http_req_receiving": {
+            "p(90)": 0.4012400000000004,
+            "p(95)": 0.7021699999999994,
+            "avg": 0.1433,
+            "min": 0,
+            "med": 0,
+            "max": 1.0031
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 7,
+            "value": 0
+        },
+        "vus_max": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "data_received": {
+            "count": 8767,
+            "rate": 1052.9481340712962
+        },
+        "http_req_waiting": {
+            "avg": 185.38601428571428,
+            "min": 0.5055,
+            "med": 143.6367,
+            "max": 606.412,
+            "p(90)": 381.73432000000014,
+            "p(95)": 494.0731599999997
+        },
+        "http_req_connecting": {
+            "p(95)": 0.35986999999999963,
+            "avg": 0.07344285714285714,
+            "min": 0,
+            "med": 0,
+            "max": 0.5141,
+            "p(90)": 0.20564000000000018
+        },
+        "http_req_sending": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "data_sent": {
+            "rate": 206.21785630208913,
+            "count": 1717
+        },
+        "http_req_duration": {
+            "p(90)": 382.13556000000017,
+            "p(95)": 494.7753299999997,
+            "avg": 185.5293142857143,
+            "min": 0.5055,
+            "med": 143.6367,
+            "max": 607.4151
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 185.5293142857143,
+            "min": 0.5055,
+            "med": 143.6367,
+            "max": 607.4151,
+            "p(90)": 382.13556000000017,
+            "p(95)": 494.7753299999997
+        },
+        "checks": {
+            "passes": 7,
+            "fails": 0,
+            "thresholds": {
+                "rate==1": false
+            },
+            "value": 1
+        },
+        "iteration_duration": {
+            "med": 8325.1412,
+            "max": 8325.1412,
+            "p(90)": 8325.1412,
+            "p(95)": 8325.1412,
+            "avg": 8325.1412,
+            "min": 8325.1412
+        },
+        "http_req_blocked": {
+            "max": 7.0873,
+            "p(90)": 2.8349200000000025,
+            "p(95)": 4.961109999999995,
+            "avg": 1.0124714285714285,
+            "min": 0,
+            "med": 0
+        },
+        "iterations": {
+            "count": 1,
+            "rate": 0.1201035854991783
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0
+        }
+    }
+}

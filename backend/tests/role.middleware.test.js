@@ -6,7 +6,7 @@ const {
   requireRole
 } = require("../src/middlewares/role.middleware");
 
-// Simular una respuesta HTTP sin iniciar Express
+// Mock an HTTP response without starting Express
 function mockResponse() {
   return {
     statusCode: 200,
@@ -24,8 +24,8 @@ function mockResponse() {
   };
 }
 
-// PRUEBA 1: usuario sin autenticación
-test("Rechaza solicitudes sin usuario con HTTP 401", () => {
+// TEST 1: unauthenticated user
+test("Rejects requests without a user with HTTP 401", () => {
   const req = {};
   const res = mockResponse();
   let called = false;
@@ -39,8 +39,8 @@ test("Rechaza solicitudes sin usuario con HTTP 401", () => {
   assert.equal(called, false);
 });
 
-// PRUEBA 2: cliente sin permisos de administrador
-test("CLIENT no puede acceder a ADMIN", () => {
+// TEST 2: client without administrator permissions
+test("CLIENT cannot access ADMIN resources", () => {
   const req = { user: { role: "CLIENT" } };
   const res = mockResponse();
   let called = false;
@@ -54,8 +54,8 @@ test("CLIENT no puede acceder a ADMIN", () => {
   assert.equal(called, false);
 });
 
-// PRUEBA 3: cliente autorizado
-test("CLIENT puede acceder a su recurso", () => {
+// TEST 3: authorized client
+test("CLIENT can access its resource", () => {
   const req = { user: { role: "CLIENT" } };
   const res = mockResponse();
   let called = false;
@@ -67,8 +67,8 @@ test("CLIENT puede acceder a su recurso", () => {
   assert.equal(called, true);
 });
 
-// PRUEBA 4: administrador autorizado
-test("ADMIN puede acceder a su recurso", () => {
+// TEST 4: authorized administrator
+test("ADMIN can access its resource", () => {
   const req = { user: { role: "ADMIN" } };
   const res = mockResponse();
   let called = false;
@@ -80,8 +80,8 @@ test("ADMIN puede acceder a su recurso", () => {
   assert.equal(called, true);
 });
 
-// PRUEBA 5: propietario sin permisos administrativos
-test("BUSINESS_OWNER no puede acceder a ADMIN", () => {
+// TEST 5: business owner without administrator permissions
+test("BUSINESS_OWNER cannot access ADMIN resources", () => {
   const req = { user: { role: "BUSINESS_OWNER" } };
   const res = mockResponse();
   let called = false;
@@ -94,8 +94,8 @@ test("BUSINESS_OWNER no puede acceder a ADMIN", () => {
   assert.equal(called, false);
 });
 
-// PRUEBA 6: autorización para varios roles
-test("Permite CLIENT y BUSINESS_OWNER cuando están autorizados", () => {
+// TEST 6: authorization for multiple roles
+test("Allows CLIENT and BUSINESS_OWNER when authorized", () => {
   const req = { user: { role: "BUSINESS_OWNER" } };
   const res = mockResponse();
   let called = false;

@@ -1,0 +1,83 @@
+const express = require("express");
+
+const {
+  createReservation,
+  getMyReservations,
+  getBusinessReservations,
+  getReservationById,
+  cancelReservation,
+  getAvailableSlots
+} = require("../controllers/reservation.controller");
+
+const {
+  verifyToken
+} = require("../middlewares/auth.middleware");
+
+const {
+  requireRole
+} = require("../middlewares/role.middleware");
+
+const router = express.Router();
+
+// ============================================
+// PUBLIC ROUTES
+// ============================================
+
+// Get available appointment slots
+router.get(
+  "/availability",
+  getAvailableSlots
+);
+
+// ============================================
+// CLIENT ROUTES
+// ============================================
+
+// Create a pending reservation
+router.post(
+  "/",
+  verifyToken,
+  requireRole("CLIENT"),
+  createReservation
+);
+
+// Get authenticated client's reservations
+router.get(
+  "/mine",
+  verifyToken,
+  requireRole("CLIENT"),
+  getMyReservations
+);
+
+// Cancel a pending reservation
+router.patch(
+  "/:id/cancel",
+  verifyToken,
+  requireRole("CLIENT"),
+  cancelReservation
+);
+
+// ============================================
+// BUSINESS OWNER AND ADMIN ROUTES
+// ============================================
+
+// Get reservations for a specific business
+router.get(
+  "/business/:businessId",
+  verifyToken,
+  requireRole("BUSINESS_OWNER", "ADMIN"),
+  getBusinessReservations
+);
+
+// ============================================
+// PROTECTED RESERVATION ROUTES
+// ============================================
+
+// Get reservation details by ID
+router.get(
+  "/:id",
+  verifyToken,
+  getReservationById
+);
+
+module.exports = router;

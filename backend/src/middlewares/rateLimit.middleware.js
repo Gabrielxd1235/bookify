@@ -1,23 +1,23 @@
 
 const { rateLimit } = require("express-rate-limit");
 
-// Limitar intentos de inicio de sesión
+// Limit login attempts
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
   standardHeaders: "draft-8",
   legacyHeaders: false,
 
-  // Solo contar solicitudes que no sean exitosas
+  // Count only unsuccessful requests
   skipSuccessfulRequests: true,
 
   message: {
     success: false,
-    message: "Demasiados intentos de inicio de sesión. Intenta más tarde."
+    message: "Too many login attempts. Please try again later."
   }
 });
 
-// Limitar registros de nuevas cuentas
+// Limit new account registrations
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 5,
@@ -26,7 +26,7 @@ const registerLimiter = rateLimit({
 
   message: {
     success: false,
-    message: "Demasiados registros. Intenta nuevamente más tarde."
+    message: "Too many registrations. Please try again later."
   }
 });
 

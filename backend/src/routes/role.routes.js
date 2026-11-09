@@ -11,36 +11,36 @@ const {
 
 const router = express.Router();
 
-// Todas las rutas necesitan autenticación
+// All routes require authentication
 router.use(verifyToken);
 
-// Panel exclusivo de clientes
+// Client-only dashboard
 router.get("/client", requireRole("CLIENT"), (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Bienvenido al panel del cliente",
+    message: "Welcome to the client dashboard",
     role: req.user.role
   });
 });
 
-// Panel exclusivo de propietarios
+// Business owner-only dashboard
 router.get(
   "/business",
   requireRole("BUSINESS_OWNER"),
   (req, res) => {
     res.status(200).json({
       success: true,
-      message: "Bienvenido al panel del negocio",
+      message: "Welcome to the business dashboard",
       role: req.user.role
     });
   }
 );
 
-// Panel exclusivo de administradores
+// Administrator-only dashboard
 router.get("/admin", requireRole("ADMIN"), (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Bienvenido al panel de administración",
+    message: "Welcome to the administration dashboard",
     role: req.user.role
   });
 });

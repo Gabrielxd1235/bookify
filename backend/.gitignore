@@ -1,4 +1,20 @@
-node_modules/
+# Environment variables and secrets
 .env
 .env.*
 !.env.example
+
+# Dependencies
+node_modules/
+
+# Build files
+dist/
+build/
+coverage/
+tests/load/private/
+
+# Logs
+*.log
+
+# Local files
+.DS_Store
+Thumbs.db

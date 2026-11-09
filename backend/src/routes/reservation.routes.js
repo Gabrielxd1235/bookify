@@ -37,7 +37,7 @@ router.get(
 router.post(
   "/",
   verifyToken,
-  requireRole("CLIENT"),
+  requireRole("CLIENT", "BUSINESS_OWNER"),
   createReservation
 );
 
@@ -45,7 +45,7 @@ router.post(
 router.get(
   "/mine",
   verifyToken,
-  requireRole("CLIENT"),
+  requireRole("CLIENT", "BUSINESS_OWNER"),
   getMyReservations
 );
 
@@ -53,7 +53,7 @@ router.get(
 router.patch(
   "/:id/cancel",
   verifyToken,
-  requireRole("CLIENT"),
+  requireRole("CLIENT", "BUSINESS_OWNER"),
   cancelReservation
 );
 

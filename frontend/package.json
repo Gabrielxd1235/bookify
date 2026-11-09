@@ -1,12 +1,13 @@
 {
   "name": "bookify-frontend",
+  "version": "2.1.0",
   "private": true,
-  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview --host 0.0.0.0",
+    "verify": "node scripts/check-source.mjs && node --test scripts/payment.test.mjs && vite build"
   },
   "dependencies": {
     "react": "^19.2.0",

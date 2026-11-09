@@ -22,3 +22,26 @@ Thumbs.db
 
 # Editor
 .vscode/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Private test data
+backend/tests/load/private/
+backend/tests/load/results/
+
+# Logs and temporary files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

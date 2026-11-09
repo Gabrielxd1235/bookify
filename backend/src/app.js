@@ -22,7 +22,12 @@ const businessHoursRoutes = require("./routes/businessHours.routes");
 const reservationRoutes = require("./routes/reservation.routes");
 const paymentRoutes = require("./routes/payment.routes");
 const adminRoutes = require("./routes/admin.routes");
-
+// BOOKIFY - Profile and Business Owner Extensions
+const profileRoutes = require("./routes/profile.routes");
+const ownerApplicationRoutes = require("./routes/business-owner-application.routes");
+const ownerApplicationAdminRoutes = require("./routes/business-owner-admin.routes");
+const businessMediaRoutes = require("./routes/business-media.routes");
+const mockCheckoutRoutes = require("./routes/mock-checkout.routes");
 // Background jobs
 const {
   startReservationExpiryJob
@@ -179,6 +184,13 @@ app.use("/api/payments", paymentRoutes);
 
 // Administrator management
 app.use("/api/admin", adminRoutes);
+
+// BOOKIFY - New API Routes
+app.use("/api/profile", profileRoutes);
+app.use("/api/business-owner", ownerApplicationRoutes);
+app.use("/api/admin", ownerApplicationAdminRoutes);
+app.use("/api/businesses", businessMediaRoutes);
+app.use("/api/mock-checkout", mockCheckoutRoutes);
 
 // Database connection check
 app.get("/api/db-check", async (req, res) => {

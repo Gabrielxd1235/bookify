@@ -1,11 +1,16 @@
 "use strict";
 const supabase = require("../config/supabase");
 
+
 function allowedInThisEnvironment() {
-  return process.env.NODE_ENV !== "production" &&
+  return (
     process.env.PAYMENT_MODE === "MOCK" &&
-    String(process.env.ENABLE_MOCK_PAYMENTS).toLowerCase() === "true";
+    String(process.env.ENABLE_MOCK_PAYMENTS)
+      .trim()
+      .toLowerCase() === "true"
+  );
 }
+
 
 async function payDeposit(req, res) {
   if (!allowedInThisEnvironment()) {

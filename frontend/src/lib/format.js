@@ -1,3 +1,4 @@
+import {categoryPresentation} from './categoryPresentation.js';
 export const money = (value,currency='PEN') => {
   const n=Number(value);if(!Number.isFinite(n)) return '—';
   return new Intl.NumberFormat('en-PE',{style:'currency',currency:currency||'PEN',maximumFractionDigits:2}).format(n);
@@ -12,4 +13,4 @@ export const initials = (name='B') => name.trim().split(/\s+/).slice(0,2).map(s=
 export const weekdays=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 export const compact = v => new Intl.NumberFormat('en-US').format(Number(v)||0);
 export const statusClass = s => String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-');
-export const categoryIcon = name => { const s=String(name||'').toLowerCase();return /barber|haircut|barbería/.test(s)?'scissors':/salon|beauty|peluquer|belleza/.test(s)?'sparkles':/spa|wellness/.test(s)?'leaf':/massage|masaje/.test(s)?'heart':'store'; };
+export const categoryIcon = name => categoryPresentation({name}).icon;

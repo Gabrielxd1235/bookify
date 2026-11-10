@@ -46,7 +46,7 @@ function requireLocalMockEnvironment(req, res, next) {
 router.use(
   requireLocalMockEnvironment,
   verifyToken,
-  requireRole("CLIENT")
+  requireRole("CLIENT", "BUSINESS_OWNER")
 );
 
 // Start a simulated payment

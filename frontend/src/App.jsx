@@ -9,7 +9,9 @@ import {AuthPage,Profile,Bookings,BecomeOwner} from './pages/Account.jsx';
 import {ClientHome} from './pages/Client.jsx';
 import {Checkout} from './pages/Checkout.jsx';
 import {OwnerHome,OwnerBusinesses,OwnerServices,OwnerHours,OwnerReservations,OwnerMedia} from './pages/Owner.jsx';
-import {AdminHome,AdminApplications,AdminUsers,AdminBusinesses,AdminCategories,AdminReservations} from './pages/Admin.jsx';
+import {AdminHome,AdminApplications,AdminUsers,AdminBusinesses,AdminReservations} from './pages/Admin.jsx';
+import {AdminCategoryManager as AdminCategories} from './components/AdminCategoryManager.jsx';
+
 
 const ownerRoutes = {
   '/owner':OwnerHome,

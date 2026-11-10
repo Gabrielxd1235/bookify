@@ -1,0 +1,62 @@
+[
+  {
+    "path": "src/components/BusinessCard.jsx",
+    "before": "a2b4edc71dbf798ebe3c8c287778f3b2795b18918f394419c52cf795b98734f5",
+    "after": "a23cabd32a6c28cc9216ef3dc997475e66fa2d9fa869e318f661c1c8de738b51"
+  },
+  {
+    "path": "src/components/CategoryCard.jsx",
+    "before": null,
+    "after": "94f32b9f7c0ec674109bd106aedc3214253996725964f543ee23941eacef106e"
+  },
+  {
+    "path": "src/components/Icon.jsx",
+    "before": "8fabff62d52cbb46f52df9b816d4b6ad5d63ccfa4b0ee8af8133dca99e5c8e36",
+    "after": "b369a941b7b37e918a18643fa1a31e5bbb08ab9cc93bbe83fa8325921c718bcb"
+  },
+  {
+    "path": "src/components/MotionObserver.jsx",
+    "before": null,
+    "after": "b46bff937319ca05f2a749f0e1b948770f915e6b93829dd187807ee4c40130c5"
+  },
+  {
+    "path": "src/lib/categoryPresentation.js",
+    "before": null,
+    "after": "c72787dadcbccfa397dc2cc09aa6fbcdd1035cfb69a52d7c8535b2ff930b858f"
+  },
+  {
+    "path": "src/lib/format.js",
+    "before": "a95713d40038819d88a6bb3f1815758a6038f7c445a3ef3eba4a52e9debfbfcc",
+    "after": "f7edfb325d6fa4f9dceaac1375abf04e96f4fd5edabfa056f8de9a1a2b160e30"
+  },
+  {
+    "path": "src/lib/router.jsx",
+    "before": "7a7f8a838c26cb5636113c86e66371580ebd2b717aaf60f52303ba57b60e86cc",
+    "after": "dff5dae526d12a9a506aada78d65f8d9a5cf2bd848648ac41d5d7ae47921f5a2"
+  },
+  {
+    "path": "src/main.jsx",
+    "before": "c80ce69acd42ee0cca9c8b0815185b8e52d14ea0f8025eee224a489a367c5872",
+    "after": "4e7e3fbc5edf59c620bfbc163657286567dd16c9ff4eea7504ca2e617033feec"
+  },
+  {
+    "path": "src/motion.css",
+    "before": null,
+    "after": "a3eae16b22480ce246cf60f1d61758f61cf7d9c69df79ea3a500d6327dbbef8c"
+  },
+  {
+    "path": "src/pages/Public.jsx",
+    "before": "db0b78fe70dc5792272c248f6e193c5884635e5ea7cbfb6c24239096695128e2",
+    "after": "a298761ab141209b0318eb40fe9650be02904dfd3684d9552355120f05051110"
+  },
+  {
+    "path": "scripts/cache-category-images.cjs",
+    "before": null,
+    "after": "ded2561791800d5c0f3d2b1e7bb16d19949d7cbb8b1d3d444e3dc1c120fdb764"
+  },
+  {
+    "path": "scripts/polish.test.mjs",
+    "before": "c079806c374c6a992998a94faf6cb700ee70c97271427abda4703eee4f94d6a2",
+    "after": "d3e9cc1af9e4eb6e27b15a7bd061e1b5b8839fc8e4a6a7b2986fc2100d5b1ee2"
+  }
+]

@@ -1,0 +1,57 @@
+[
+  {
+    "path": "src/components/BusinessCard.jsx",
+    "before": "066f1dab8d2a9aea3df821879427ec927b32a1ae02fbf01f5c8e2ed20b81b5c9",
+    "after": "a2b4edc71dbf798ebe3c8c287778f3b2795b18918f394419c52cf795b98734f5"
+  },
+  {
+    "path": "src/components/Layout.jsx",
+    "before": "1f9e336ca246cf7b418893b53f2a0b711d7c26add1cbd2555837f1fb081d1a46",
+    "after": "c77d087a6ab17a78edce6af37b3ef27ad20baf6b7ecfeaf318f788f4c6fed1fb"
+  },
+  {
+    "path": "src/components/UI.jsx",
+    "before": "5f982a5295d5e9f075e0d7bef6bf16d829d108406a0b9401ecfe487d32cb83d6",
+    "after": "167c70fa6207062af9c2d7d66fc66069be80b728b85a7053b25e8a78f4a8ec63"
+  },
+  {
+    "path": "src/lib/router.jsx",
+    "before": "54176a6a273275a538cf3dae0236b4ca8650199136cb94988992408d31ffcf66",
+    "after": "7a7f8a838c26cb5636113c86e66371580ebd2b717aaf60f52303ba57b60e86cc"
+  },
+  {
+    "path": "src/main.jsx",
+    "before": "070638bd3adea766211e06d0cceae1f84cd2a4a61ac6b30daaf1925828d1fc02",
+    "after": "c80ce69acd42ee0cca9c8b0815185b8e52d14ea0f8025eee224a489a367c5872"
+  },
+  {
+    "path": "src/pages/Account.jsx",
+    "before": "8538f9513aa584467dc2bb6a7d7d83c91cecc50f54a83c01a8616647255840b2",
+    "after": "c04a9c056bf3f9c124031a516b4ab7cf70ff1cd220cee9ff0cf4e683d822179e"
+  },
+  {
+    "path": "src/pages/Admin.jsx",
+    "before": "9bbf201696d94057be3373affe747729fe7ec72f81cb8569f9dd064ace994495",
+    "after": "7ae98ae77e4e3326c1dad204589452bf56d75e66599055c6ed942bcdb300cd7c"
+  },
+  {
+    "path": "src/pages/Owner.jsx",
+    "before": "061b956126cbdc04dae0ee3df8ad0975ec0578b3c3e0ef6e4253fe31a45e173b",
+    "after": "2c90fc028b58018943f9524fadcdb67351202b1e93164006000e9d544f94d389"
+  },
+  {
+    "path": "src/pages/Public.jsx",
+    "before": "3f41cc143b8ff6fd7b96ac456d1bd482ddb096241c9fab53c6919507bea39911",
+    "after": "db0b78fe70dc5792272c248f6e193c5884635e5ea7cbfb6c24239096695128e2"
+  },
+  {
+    "path": "src/polish.css",
+    "before": null,
+    "after": "24a9ab05d9a8a471dc66288f43bf61ff7417ff15373fa24ffcff346c274c4e8b"
+  },
+  {
+    "path": "scripts/polish.test.mjs",
+    "before": null,
+    "after": "c079806c374c6a992998a94faf6cb700ee70c97271427abda4703eee4f94d6a2"
+  }
+]

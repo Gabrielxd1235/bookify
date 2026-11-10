@@ -1,12 +1,16 @@
 import React from 'react';
 const paths={
+  home:<><path d="m3 10 9-7 9 7v10H3V10Z"/><path d="M9 20v-7h6v7"/></>,
+  dumbbell:<><path d="m6 6 12 12M4 9l5-5M15 20l5-5M2 7l5-5M17 22l5-5M3 11l8-8M13 21l8-8"/></>,
+  lotus:<><path d="M12 20c-4-1-8-4-8-10 4 0 7 2 8 5 1-3 4-5 8-5 0 6-4 9-8 10Z"/><path d="M8 11c0-4 4-8 4-8s4 4 4 8M3 16c2 4 6 6 9 4 3 2 7 0 9-4"/></>,
+  massage:<><circle cx="15" cy="5" r="2"/><path d="M3 18h18M5 18v3m14-3v3M4 14h6l3-4 4 2h4M4 14v4m6-4 5 4M9 4l-2 2 2 2M4 3 2 5l2 2"/></>,
   calendar:<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></>,
-  'calendar-check':<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18m5 6 2 2 4-4"/></>,
+  'calendar-check':<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M9 15l2 2 4-4"/></>,
   user:<><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></>,
   users:<><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2m2-15a3 3 0 0 1 0 6m1 4a5 5 0 0 1 3 5"/></>,
   store:<><path d="M3 10h18l-2-6H5l-2 6Zm1 0v11h16V10M9 21v-8h6v8M3 10c1 2 3 2 4 0 1 2 3 2 5 0 2 2 4 2 5 0 1 2 3 2 4 0"/></>,
   scissors:<><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="m8 8 13 13M14 9l7-7M8 16l4-4"/></>,
-  sparkles:<><path d="m12 2 2.3 7.7L22 12l-7.7 2.3L12 22l-2.3-7.7L2 12l7.7-2.3L12 2Z"/></>,
+  sparkles:<><path d="m10 4 2.2 6.2L18 12l-5.8 2.2L10 20l-2.2-5.8L2 12l5.8-1.8L10 4Z"/><path d="M19 2v6m-3-3h6M20 16v4m-2-2h4"/></>,
   leaf:<><path d="M20 4C10 3 4 8 4 15a5 5 0 0 0 5 5c7 0 12-6 11-16ZM4 20c3-6 7-10 13-13"/></>,
   heart:<><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></>,
   arrow:<><path d="M4 12h16m-6-6 6 6-6 6"/></>,
@@ -51,5 +55,5 @@ const paths={
   star:<path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 6.9L12 18l-6.3 3.1 1.2-6.9-5-4.9 7-1L12 2Z"/>,
 };
 export function Icon({name,size=20,strokeWidth=1.8,className='',...props}) {
-  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{paths[name] || paths.info}</svg>;
+  return <svg className={`bookify-icon icon-${name} ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{paths[name] || paths.info}</svg>;
 }

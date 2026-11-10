@@ -28,6 +28,7 @@ const ownerApplicationRoutes = require("./routes/business-owner-application.rout
 const ownerApplicationAdminRoutes = require("./routes/business-owner-admin.routes");
 const businessMediaRoutes = require("./routes/business-media.routes");
 const mockCheckoutRoutes = require("./routes/mock-checkout.routes");
+const categoryBrandingRoutes = require("./routes/category-branding.routes");
 // Background jobs
 const {
   startReservationExpiryJob
@@ -164,7 +165,10 @@ app.use("/api/auth", authRoutes);
 // Role-based dashboard routes
 app.use("/api/dashboard", roleRoutes);
 
-// Category management
+// Category branding extension
+app.use("/api/categories", categoryBrandingRoutes);
+
+// Existing category routes
 app.use("/api/categories", categoryRoutes);
 
 // Business management
@@ -191,6 +195,7 @@ app.use("/api/business-owner", ownerApplicationRoutes);
 app.use("/api/admin", ownerApplicationAdminRoutes);
 app.use("/api/businesses", businessMediaRoutes);
 app.use("/api/mock-checkout", mockCheckoutRoutes);
+
 
 // Database connection check
 app.get("/api/db-check", async (req, res) => {

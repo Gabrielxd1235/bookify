@@ -1,0 +1,55 @@
+/* BOOKIFY interaction system: short, restrained motion with accessible fallbacks. */
+:root{--ease-out:cubic-bezier(.22,1,.36,1);--focus-ring:#387b68}
+:focus-visible{outline:3px solid var(--focus-ring);outline-offset:4px}
+::selection{background:#cce5d8;color:#17463f}
+.public-content{flex:1;min-width:0}.public-content:focus,.workspace-main:focus{outline:0}
+.skip-link{position:fixed;left:16px;top:-90px;padding:13px 20px;background:var(--forest-dark);color:white;border-radius:10px;z-index:200}.skip-link:focus{top:12px}
+.site-header{background:rgba(255,255,255,.95)}
+.public-nav a{position:relative;padding:12px 0;transition:color .2s}
+.public-nav a:after{content:'';position:absolute;bottom:4px;left:0;right:0;height:2px;border-radius:2px;background:var(--forest);transform:scaleX(0);transform-origin:left;transition:transform .25s var(--ease-out)}
+.public-nav a:hover:after,.public-nav a:focus-visible:after{transform:scaleX(1)}
+.page-transition{animation:page-enter .38s var(--ease-out) both}
+@keyframes page-enter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.hero-copy{animation:page-enter .65s var(--ease-out) both}.hero-art{animation:page-enter .85s var(--ease-out) both}
+.art-floating{animation:float-in .8s var(--ease-out) both}.art-float-right{animation-delay:.12s}
+@keyframes float-in{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.hero-arch{background:radial-gradient(ellipse at 22% 0%,#91b9a9,transparent 65%),linear-gradient(148deg,#759e8f,#3e806d 48%,#244f48)}
+.btn,.icon-btn,.sidebar-link,.slot,.service-item,.auth-switch button{transition:background .2s,color .2s,border-color .2s,box-shadow .2s,transform .25s var(--ease-out)}
+.btn:active:not(:disabled),.icon-btn:active{transform:scale(.98)}
+.btn:disabled{transform:none;box-shadow:none}
+.btn-primary{box-shadow:0 3px 8px #17463f14}
+.business-card{transition:transform .35s var(--ease-out),box-shadow .35s,border-color .25s}
+.business-visual>img{transition:transform .6s var(--ease-out)}
+.circle-arrow{transition:background .2s,color .2s,transform .3s var(--ease-out)}
+@media(hover:hover){.business-card:hover{border-color:#c4d8cb;transform:translateY(-5px);box-shadow:0 18px 38px #193a2b12}.business-card:hover .business-visual>img{transform:scale(1.045)}.business-card:hover .circle-arrow{transform:translateX(3px)}.sidebar-link:hover svg{transform:translateX(2px)}}
+.sidebar{overflow-y:auto;overscroll-behavior:contain}.sidebar-logo,.sidebar-bottom{flex-shrink:0}
+.sidebar-link svg{transition:transform .25s var(--ease-out);flex-shrink:0}
+.sidebar-link.selected{background:linear-gradient(100deg,#e2f0e8,#eef6f0);box-shadow:inset 0 0 0 1px #d8e9df}
+.selected-bar{animation:bar-enter .3s var(--ease-out)}
+@keyframes bar-enter{from{transform:scaleY(.2);opacity:0}to{transform:scaleY(1);opacity:1}}
+.workspace-topbar{background:rgba(255,255,255,.93)}
+.workspace-main{min-width:0}.page-heading h1{color:#203a31}
+.stat-card{background:linear-gradient(145deg,#fff,#fcfdfb);border-color:#e1eae3;transition:border-color .25s,box-shadow .25s}
+.stat-card:hover{border-color:#bfd6c7;box-shadow:0 7px 24px #1f49320a}
+.stat-icon{background:#edf5ef}.card{box-shadow:0 4px 24px #193a2b05}
+.tabs{position:relative;isolation:isolate;display:flex;flex-wrap:nowrap;gap:4px;padding:5px;background:#eef3ee;border:1px solid #e2eae3;border-radius:13px;overflow-x:auto;max-width:100%;scrollbar-width:thin}
+.tabs button{position:relative;z-index:1;flex:0 0 auto;border:0!important;border-radius:9px;padding:11px 17px;background:transparent!important;color:#697b70;white-space:nowrap;font-weight:750;transition:color .2s}
+.tabs button.active{color:#205746;box-shadow:none!important}.tabs button:hover{color:#17463f}
+.tab-indicator{position:absolute;z-index:0;pointer-events:none;background:white;border:1px solid #dce8df;border-radius:9px;box-shadow:0 2px 7px #173f2510;transition:left .3s var(--ease-out),width .3s var(--ease-out),top .3s var(--ease-out)}
+.form-field input,.form-field select,.form-field textarea,.search-input,.filter-select{transition:border-color .2s,box-shadow .2s,background .2s}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus,.search-input:focus-within,.filter-select:focus-within{border-color:#5b9279;box-shadow:0 0 0 4px #3d826b13}
+.service-selected{box-shadow:inset 3px 0 0 var(--forest)}.slot.active{box-shadow:0 3px 8px #245e5420}
+.modal-backdrop{animation:backdrop-enter .18s ease-out;backdrop-filter:blur(4px)}
+.modal{max-height:calc(100dvh - 40px);overflow-y:auto;animation:dialog-enter .28s var(--ease-out)}
+@keyframes backdrop-enter{from{opacity:0}to{opacity:1}}
+@keyframes dialog-enter{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.toast{animation:page-enter .3s var(--ease-out)}
+.empty-state{border-radius:16px;background:linear-gradient(145deg,#f8faf7,#fff)}
+.loading{min-height:180px}.business-grid,.manage-grid{align-items:stretch}
+.business-name,.business-address,.page-heading h1{overflow-wrap:anywhere}
+[id="how-it-works"],[id="why-bookify"]{scroll-margin-top:24px}
+@media(max-width:980px){.mobile-menu{display:grid}.mobile-nav{display:flex;flex-direction:column;padding:16px 20px;background:#fff;position:absolute;z-index:25;top:81px;left:0;right:0;box-shadow:0 12px 25px #183b2514;animation:page-enter .2s var(--ease-out)}.mobile-nav a,.mobile-nav button{padding:13px 10px;border:0;background:none;text-align:left;font-weight:700;color:#4e6256}}
+@media(max-width:760px){.mobile-nav{top:69px}.sidebar{height:100dvh;transition:transform .3s var(--ease-out)}.sidebar-scrim{animation:backdrop-enter .2s}.tabs button{min-height:44px;padding:10px 14px}.icon-btn{min-width:44px;min-height:44px}.slot{min-height:44px}.page-public.container{padding-left:19px;padding-right:19px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.business-card:hover,.business-card:hover .business-visual>img{transform:none}}
+
+.auth-switch-wrap{margin-bottom:25px}.auth-switch-wrap .tabs button{flex:1}

@@ -11,31 +11,44 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
-    name: Build and deploy BOOKIFY backend
     runs-on: ubuntu-latest
-
-    permissions:
-      id-token: write
-      contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Login to Microsoft Azure
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ghcr.io/gabrielxd1235/bookify-api:${{ github.sha }}
+
+      - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.BOOKIFYAPI_AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.BOOKIFYAPI_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.BOOKIFYAPI_AZURE_SUBSCRIPTION_ID }}
 
-      - name: Build and deploy BOOKIFY API
-        uses: azure/container-apps-deploy-action@v2
-        with:
-          appSourcePath: ${{ github.workspace }}/backend
-          containerAppName: bookify-api
-          resourceGroup: bookify-rg
-          targetPort: 3000
-          disableTelemetry: true
+      - name: Deploy Docker image to Azure
+        run: |
+          az containerapp update \
+            --name bookify-api \
+            --resource-group bookify-rg \
+            --image ghcr.io/gabrielxd1235/bookify-api:${{ github.sha }}

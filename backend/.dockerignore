@@ -1,0 +1,13 @@
+
+node_modules
+.env
+.env.*
+.git
+.github
+tests
+scripts
+sql
+coverage
+npm-debug.log*
+*.zip
+*.log

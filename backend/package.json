@@ -21,7 +21,8 @@
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.1",
     "helmet": "^8.3.0",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.5.0"
   },
   "devDependencies": {
     "javascript-obfuscator": "^5.9.0"

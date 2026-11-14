@@ -30,7 +30,40 @@
 .category-chip.active{background:var(--forest);border-color:var(--forest);color:#fff;box-shadow:0 6px 16px #245e5430}
 .category-chip.active svg{color:#cfe6da}
 
+/* ---------- Discover: category menu (replaces the native select) ---------- */
+.category-menu{position:relative;flex:0 0 auto;min-width:230px}
+.category-menu-trigger{display:flex;align-items:center;gap:11px;width:100%;min-height:48px;padding:6px 14px 6px 8px;background:#fff;border:1px solid #dce5df;border-radius:11px;color:var(--ink);text-align:left;transition:border-color .2s,box-shadow .2s,background .2s}
+.category-menu-trigger:hover{border-color:#a9c6b8}
+.category-menu.open .category-menu-trigger{border-color:#5b9279;box-shadow:0 0 0 4px #3d826b13}
+.category-menu-icon{display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:9px;background:#edf5ef;color:var(--forest)}
+.category-menu-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.category-menu-text small{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8a9a91}
+.category-menu-text strong{font-size:.84rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.category-menu-chevron{color:#7b8f84;flex-shrink:0;transition:transform .25s var(--ease-out)}
+.category-menu.open .category-menu-chevron{transform:rotate(180deg)}
+.category-menu-backdrop{display:none}
+.category-menu-panel{position:absolute;z-index:30;top:calc(100% + 8px);right:0;min-width:100%;width:max-content;max-width:320px;max-height:340px;overflow-y:auto;padding:8px;background:#fff;border:1px solid #e1e9e3;border-radius:14px;box-shadow:0 18px 44px #19302c1f;animation:menu-enter .2s var(--ease-out)}
+@keyframes sheet-enter{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes menu-enter{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.category-menu-title{display:block;padding:7px 10px 9px;font-size:.64rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8a9a91}
+.category-menu-panel>button{display:flex;align-items:center;gap:11px;width:100%;min-height:46px;padding:6px 12px 6px 6px;border:0;border-radius:10px;background:transparent;color:#3f5248;font-size:.84rem;font-weight:600;text-align:left;transition:background .15s,color .15s}
+.category-menu-panel>button>span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.category-menu-panel>button:hover,.category-menu-panel>button:focus-visible{background:#f2f8f4;outline:0}
+.category-menu-panel>button.active{background:#e9f4ee;color:#1d4f44;font-weight:800}
+.category-menu-panel>button.active .category-menu-icon{background:var(--forest);color:#fff}
+.category-menu-check{color:var(--forest);flex-shrink:0}
+
+/* ---------- Booking widget: business without published services ---------- */
+.booking-card.no-services>*:not(.booking-head):not(.booking-empty):not(.alert){display:none}
+.booking-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px 4px;text-align:center}
+.booking-empty>span{display:grid;place-items:center;width:54px;height:54px;border-radius:16px;background:#edf5ef;color:var(--forest);margin-bottom:4px}
+.booking-empty strong{font-size:.95rem}
+.booking-empty p{margin:0 0 8px;font-size:.8rem;color:var(--muted);line-height:1.6}
+
 /* ---------- Booking widget: day strip and grouped times ---------- */
+/* The strip must scroll inside the card instead of widening the page. */
+.detail-main>*,.detail-left>*,.booking-card,.booking-card .form-field{min-width:0}
+.day-strip{max-width:100%}
 .day-strip{display:flex;gap:8px;overflow-x:auto;padding:3px 2px 8px;margin:0 -2px;scrollbar-width:thin;scroll-snap-type:x proximity}
 .day-chip{flex:0 0 58px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 8px;border:1px solid #e0e9e2;border-radius:13px;background:#f8fbf8;color:#5c7067;scroll-snap-align:start;transition:background .2s,color .2s,border-color .2s,box-shadow .2s,transform .2s var(--ease-out)}
 .day-chip small{font-size:.62rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#8a9a91;transition:color .2s}
@@ -163,6 +196,12 @@
   .hero-search{margin-left:auto;margin-right:auto;text-align:left}
   .hero-search .btn{padding-left:14px;padding-right:14px}
   .category-chips{max-width:calc(100vw - 38px)}
+  .detail-main{grid-template-columns:minmax(0,1fr)}
+  .category-menu{min-width:0;width:100%}
+  .category-menu-backdrop{display:block;position:fixed;inset:0;z-index:60;border:0;background:#152722a6;animation:backdrop-enter .2s ease-out}
+  .category-menu-panel{position:fixed;z-index:61;top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;max-height:72dvh;padding:10px 12px calc(16px + env(safe-area-inset-bottom));border:0;border-radius:20px 20px 0 0;box-shadow:0 -14px 40px #19302c33;animation:sheet-enter .28s var(--ease-out)}
+  .category-menu-panel:before{content:"";display:block;width:40px;height:4px;margin:2px auto 8px;border-radius:100px;background:#d5dfd8}
+  .category-menu-panel>button{min-height:52px;font-size:.92rem}
   .workspace-hero{padding:19px 17px;border-radius:14px}
   .workspace-hero-icon{flex-basis:50px;height:50px}
   .live-dot{margin-left:0}

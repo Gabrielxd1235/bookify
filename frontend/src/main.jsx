@@ -15,3 +15,5 @@ createRoot(document.getElementById('root')).render(
 import './polish.css';
 
 import './motion.css';
+import './styles/Experience.css';
+import './styles/Workspace.css';

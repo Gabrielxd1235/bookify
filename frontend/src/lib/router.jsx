@@ -25,6 +25,8 @@ function publish(direction,after,animate=true){
   if(animate&&!reduced()&&typeof document.startViewTransition==='function'){
     const transition=document.startViewTransition(()=>{flushSync(update);after();});activeTransition=transition;
     document.documentElement.dataset.transitioning='true';
+    // A skipped transition rejects these promises; the navigation itself already happened.
+    transition.ready?.catch(()=>{});transition.updateCallbackDone?.catch(()=>{});
     transition.finished.catch(()=>{}).finally(()=>{if(activeTransition===transition){activeTransition=null;delete document.documentElement.dataset.transitioning;}});
   }else{update();after();}
 }

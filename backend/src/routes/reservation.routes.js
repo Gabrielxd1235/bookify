@@ -4,6 +4,7 @@ const {
   createReservation,
   getMyReservations,
   getBusinessReservations,
+  getBusinessReservationSummary,
   getReservationById,
   cancelReservation,
   getAvailableSlots
@@ -60,6 +61,14 @@ router.patch(
 // ============================================
 // BUSINESS OWNER AND ADMIN ROUTES
 // ============================================
+
+// Get dashboard totals for a specific business
+router.get(
+  "/business/:businessId/summary",
+  verifyToken,
+  requireRole("BUSINESS_OWNER", "ADMIN"),
+  getBusinessReservationSummary
+);
 
 // Get reservations for a specific business
 router.get(

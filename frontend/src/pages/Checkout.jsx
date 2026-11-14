@@ -4,6 +4,7 @@ import { canDemoPay } from '../lib/payment.js';
 import { dateTime, money } from '../lib/format.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Link } from '../lib/router.jsx';
+import { useReservationNames } from '../lib/reservationNames.js';
 import { Icon } from '../components/Icon.jsx';
 import { Alert, Button, Card, Empty, Loading, PageHead, Status } from '../components/UI.jsx';
 
@@ -18,6 +19,7 @@ export function Checkout({ id }) {
   const [error, setError] = useState('');
   const [now, setNow] = useState(Date.now());
   const toast = useToast();
+  const names = useReservationNames(reservation);
 
   useEffect(() => {
     let alive = true;
@@ -80,7 +82,8 @@ export function Checkout({ id }) {
       <Card title="Booking summary" subtitle="The payment amount is calculated by BOOKIFY's backend.">
         <div className="checkout-banner"><span className="checkout-banner-icon"><Icon name="calendar-check" size={27}/></span><div><strong>Reservation #{reservation.id}</strong><p>{dateTime(reservation.starts_at)}</p></div><Status value={reservation.status}/></div>
         <div className="checkout-rows">
-          <div><span>Service</span><strong>Service #{reservation.service_id}</strong></div>
+          <div><span>Service</span><strong>{names.serviceName(reservation.service_id)}</strong></div>
+          <div><span>Business</span><strong>{names.businessName(reservation.business_id)}</strong></div>
           <div><span>Appointment</span><strong>{dateTime(reservation.starts_at)}</strong></div>
           <div><span>Full service price</span><strong>{money(reservation.total_amount, currency)}</strong></div>
           <div className="checkout-amount"><span>Deposit — 50% due now</span><strong>{money(reservation.deposit_amount, currency)}</strong></div>
@@ -92,7 +95,7 @@ export function Checkout({ id }) {
         {isConfirmed(reservation.status) ? <div className="checkout-complete" role="status"><span><Icon name="check" size={32}/></span><h2>Your appointment is confirmed!</h2><p>The backend reports this reservation as <strong>CONFIRMED</strong>.</p>{payment?.id && <p className="muted">Demo receipt #{payment.id} · {money(payment.amount, payment.currency || currency)}</p>}<Link className="btn btn-primary wide" to="/bookings">View my confirmed bookings <Icon name="arrow" size={16}/></Link></div> : isPending(reservation.status) ? <>
           <div className="checkout-demo"><Icon name="credit" size={27}/><div><strong>Demo payment only</strong><p>Press the button below to simulate your exact 50% deposit. Do not enter any card information.</p></div></div>
           <div className="checkout-due"><span>Simulated payment amount</span><strong>{money(reservation.deposit_amount, currency)}</strong></div>
-          <div className={`checkout-timer ${expired ? 'checkout-timer-expired' : ''}`}><Icon name="clock" size={17}/>{expired ? 'The payment deadline has passed.' : `Payment window: ${remaining} remaining`}</div>
+          <div className={`checkout-timer ${expired ? 'checkout-timer-expired' : millisecondsLeft < 120000 ? 'checkout-timer-urgent' : ''}`} role="timer"><Icon name="clock" size={17}/>{expired ? 'The payment deadline has passed.' : `Payment window: ${remaining} remaining`}</div>
           <Alert message={error}/>
           <Button className="wide" icon="credit" busy={busy} disabled={expired} onClick={payNow}>Pay 50% (Demo) & confirm booking</Button>
           <p className="checkout-warning"><Icon name="shield" size={16}/>Your booking stays <strong>PENDING_PAYMENT</strong> until the server confirms the deposit.</p>

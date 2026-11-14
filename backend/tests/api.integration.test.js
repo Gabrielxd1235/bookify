@@ -279,3 +279,33 @@ test("CORS supports allowed preflight requests", async () => {
     origin
   );
 });
+
+// Dashboard endpoints must never be reachable without a session
+for (const route of [
+  "/api/admin/overview",
+  "/api/reservations/business/1/summary"
+]) {
+  test(`${route} requires authentication`, async () => {
+    const response = await fetch(`${baseURL}${route}`);
+    const body = await response.json();
+
+    assert.equal(response.status, 401);
+    assert.equal(body.success, false);
+  });
+}
+
+// Account editing must also be closed to anonymous callers
+for (const route of [
+  "/api/admin/users/1",
+  "/api/admin/users/1/password"
+]) {
+  test(`PATCH ${route} requires authentication`, async () => {
+    const response = await fetch(`${baseURL}${route}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ full_name: "Nobody", new_password: "Temporary123" })
+    });
+
+    assert.equal(response.status, 401);
+  });
+}

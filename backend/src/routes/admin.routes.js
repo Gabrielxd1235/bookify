@@ -2,10 +2,13 @@ const express = require("express");
 
 const {
   verifyCurrentAdmin,
+  getOverview,
   getUsers,
   getUserById,
   updateUserRole,
-  updateUserStatus
+  updateUserStatus,
+  updateUserDetails,
+  resetUserPassword
 } = require("../controllers/admin.controller");
 
 const {
@@ -18,6 +21,12 @@ const router = express.Router();
 router.use(
   verifyToken,
   verifyCurrentAdmin
+);
+
+// Platform totals for the administrator dashboard
+router.get(
+  "/overview",
+  getOverview
 );
 
 // List users with pagination
@@ -42,6 +51,18 @@ router.patch(
 router.patch(
   "/users/:id/status",
   updateUserStatus
+);
+
+// Correct a user's contact details
+router.patch(
+  "/users/:id",
+  updateUserDetails
+);
+
+// Set a temporary password for a locked-out user
+router.patch(
+  "/users/:id/password",
+  resetUserPassword
 );
 
 module.exports = router;

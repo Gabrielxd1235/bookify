@@ -1,7 +1,12 @@
+const bcrypt = require("bcrypt");
 const supabase = require("../config/supabase");
 
+const {
+  attachReservationDetails
+} = require("../utils/reservation-details.utils");
+
 const USER_FIELDS =
-  "id, full_name, email, role, is_active, created_at, updated_at";
+  "id, full_name, email, phone, role, is_active, created_at, updated_at";
 
 const ALLOWED_ROLES = [
   "CLIENT",
@@ -50,6 +55,136 @@ async function verifyCurrentAdmin(req, res, next) {
     }
 
     next();
+
+  } catch (error) {
+    return sendDatabaseError(res, error);
+  }
+}
+
+// Count rows of a table with optional equality filters
+async function countRows(table, filters = {}) {
+  let query = supabase
+    .from(table)
+    .select("id", { count: "exact", head: true });
+
+  for (const [field, value] of Object.entries(filters)) {
+    query = query.eq(field, value);
+  }
+
+  const { count, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  return count || 0;
+}
+
+const RESERVATION_STATUSES = [
+  "PENDING_PAYMENT",
+  "CONFIRMED",
+  "COMPLETED",
+  "CANCELLED",
+  "EXPIRED",
+  "PAYMENT_FAILED",
+  "NO_SHOW"
+];
+
+// GET /api/admin/overview
+// Read-only platform totals for the administrator dashboard.
+async function getOverview(req, res) {
+  try {
+    const [
+      clients,
+      owners,
+      admins,
+      activeBusinesses,
+      inactiveBusinesses,
+      categories,
+      pendingApplications,
+      ...statusCounts
+    ] = await Promise.all([
+      countRows("users", { role: "CLIENT" }),
+      countRows("users", { role: "BUSINESS_OWNER" }),
+      countRows("users", { role: "ADMIN" }),
+      countRows("businesses", { is_active: true }),
+      countRows("businesses", { is_active: false }),
+      countRows("categories"),
+      countRows("business_owner_applications", { status: "PENDING" }),
+      ...RESERVATION_STATUSES.map((status) =>
+        countRows("reservations", { status })
+      )
+    ]);
+
+    const byStatus = {};
+
+    RESERVATION_STATUSES.forEach((status, index) => {
+      if (statusCounts[index] > 0) {
+        byStatus[status] = statusCounts[index];
+      }
+    });
+
+    const { data: paid, error: paidError } = await supabase
+      .from("reservations")
+      .select("deposit_amount, total_amount")
+      .in("status", ["CONFIRMED", "COMPLETED"])
+      .limit(5000);
+
+    if (paidError) {
+      return sendDatabaseError(res, paidError);
+    }
+
+    const sum = (field) =>
+      Math.round(
+        (paid || []).reduce(
+          (total, row) => total + (Number(row[field]) || 0),
+          0
+        ) * 100
+      ) / 100;
+
+    const { data: recent, error: recentError } = await supabase
+      .from("reservations")
+      .select(
+        "id, user_id, service_id, business_id, status, starts_at, total_amount, deposit_amount, currency, created_at"
+      )
+      .order("created_at", { ascending: false })
+      .limit(6);
+
+    if (recentError) {
+      return sendDatabaseError(res, recentError);
+    }
+
+    return res.status(200).json({
+      success: true,
+      overview: {
+        users: {
+          total: clients + owners + admins,
+          clients,
+          owners,
+          admins
+        },
+        businesses: {
+          active: activeBusinesses,
+          inactive: inactiveBusinesses
+        },
+        categories,
+        pendingApplications,
+        reservations: {
+          total: Object.values(byStatus).reduce(
+            (total, value) => total + value,
+            0
+          ),
+          byStatus
+        },
+        confirmedDeposits: sum("deposit_amount"),
+        confirmedValue: sum("total_amount"),
+        currency: "PEN"
+      },
+      recentReservations: await attachReservationDetails(
+        recent,
+        { includeClient: true }
+      )
+    });
 
   } catch (error) {
     return sendDatabaseError(res, error);
@@ -403,10 +538,273 @@ async function updateUserStatus(req, res) {
   }
 }
 
+// Load a non-administrator account that an administrator may edit
+async function findEditableUser(id, res) {
+  if (!isValidId(id)) {
+    res.status(400).json({
+      success: false,
+      message: "Invalid user ID"
+    });
+
+    return null;
+  }
+
+  const { data: user, error } = await supabase
+    .from("users")
+    .select("id, role, is_active, email")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    sendDatabaseError(res, error);
+    return null;
+  }
+
+  if (!user) {
+    res.status(404).json({
+      success: false,
+      message: "User not found"
+    });
+
+    return null;
+  }
+
+  // Administrator accounts are managed outside this dashboard
+  if (user.role === "ADMIN") {
+    res.status(403).json({
+      success: false,
+      message: "Administrator accounts cannot be modified here"
+    });
+
+    return null;
+  }
+
+  return user;
+}
+
+// PATCH /api/admin/users/:id
+// Correct a user's contact details (full_name, email, phone).
+async function updateUserDetails(req, res) {
+  const body = req.body || {};
+  const accepted = ["full_name", "email", "phone"];
+  const keys =
+    typeof body === "object" && !Array.isArray(body)
+      ? Object.keys(body)
+      : [];
+
+  if (
+    keys.length === 0 ||
+    keys.some((key) => !accepted.includes(key))
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: "Only full_name, email and phone can be updated"
+    });
+  }
+
+  const changes = {};
+
+  if (Object.hasOwn(body, "full_name")) {
+    const fullName =
+      typeof body.full_name === "string"
+        ? body.full_name.trim()
+        : "";
+
+    if (fullName.length < 3 || fullName.length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: "Full name must have 3-100 characters"
+      });
+    }
+
+    changes.full_name = fullName;
+  }
+
+  if (Object.hasOwn(body, "email")) {
+    const email =
+      typeof body.email === "string"
+        ? body.email.trim().toLowerCase()
+        : "";
+
+    if (
+      email.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid email address is required"
+      });
+    }
+
+    changes.email = email;
+  }
+
+  if (Object.hasOwn(body, "phone")) {
+    if (
+      body.phone !== null &&
+      (
+        typeof body.phone !== "string" ||
+        !/^[+\d\s()\-]{7,25}$/.test(body.phone.trim())
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number"
+      });
+    }
+
+    changes.phone =
+      body.phone === null ? null : body.phone.trim();
+  }
+
+  try {
+    const user = await findEditableUser(req.params.id, res);
+
+    if (!user) {
+      return undefined;
+    }
+
+    // Reject an email that already belongs to another account
+    if (changes.email && changes.email !== user.email) {
+      const { data: taken, error: takenError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", changes.email)
+        .neq("id", user.id)
+        .maybeSingle();
+
+      if (takenError) {
+        return sendDatabaseError(res, takenError);
+      }
+
+      if (taken) {
+        return res.status(409).json({
+          success: false,
+          message: "Another account already uses this email"
+        });
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("users")
+      .update({
+        ...changes,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", user.id)
+      .neq("role", "ADMIN")
+      .select(USER_FIELDS)
+      .maybeSingle();
+
+    if (error) {
+      if (error.code === "23505") {
+        return res.status(409).json({
+          success: false,
+          message: "Another account already uses this email"
+        });
+      }
+
+      return sendDatabaseError(res, error);
+    }
+
+    if (!data) {
+      return res.status(409).json({
+        success: false,
+        message: "User information changed. Please try again."
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User details updated successfully",
+      user: data
+    });
+
+  } catch (error) {
+    return sendDatabaseError(res, error);
+  }
+}
+
+// PATCH /api/admin/users/:id/password
+// Set a temporary password for a locked-out user and close their sessions.
+async function resetUserPassword(req, res) {
+  const { new_password: newPassword } = req.body || {};
+
+  if (
+    typeof newPassword !== "string" ||
+    newPassword.length < 8 ||
+    Buffer.byteLength(newPassword, "utf8") > 72
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: "Password must have 8+ characters and at most 72 bytes"
+    });
+  }
+
+  try {
+    const user = await findEditableUser(req.params.id, res);
+
+    if (!user) {
+      return undefined;
+    }
+
+    const now = new Date().toISOString();
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    const { data, error } = await supabase
+      .from("users")
+      .update({
+        password_hash: passwordHash,
+        password_changed_at: now,
+        updated_at: now
+      })
+      .eq("id", user.id)
+      .neq("role", "ADMIN")
+      .select("id")
+      .maybeSingle();
+
+    if (error) {
+      return sendDatabaseError(res, error);
+    }
+
+    if (!data) {
+      return res.status(409).json({
+        success: false,
+        message: "User information changed. Please try again."
+      });
+    }
+
+    // Close every open session so the old password stops working everywhere
+    const { error: revokeError } = await supabase
+      .from("refresh_tokens")
+      .update({ revoked_at: now })
+      .eq("user_id", user.id)
+      .is("revoked_at", null);
+
+    if (revokeError) {
+      console.error(
+        "Session revocation after password reset failed:",
+        revokeError.message
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset. The user must sign in again."
+    });
+
+  } catch (error) {
+    return sendDatabaseError(res, error);
+  }
+}
+
 module.exports = {
   verifyCurrentAdmin,
+  getOverview,
   getUsers,
   getUserById,
   updateUserRole,
-  updateUserStatus
+  updateUserStatus,
+  updateUserDetails,
+  resetUserPassword
 };

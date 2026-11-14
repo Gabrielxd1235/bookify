@@ -1,5 +1,9 @@
 const supabase = require("../config/supabase");
 
+const {
+  attachReservationDetails
+} = require("../utils/reservation-details.utils");
+
 // Fields returned by reservation queries
 const RESERVATION_FIELDS = `
   id,
@@ -222,9 +226,11 @@ async function getMyReservations(req, res) {
       );
     }
 
+    const reservations = await attachReservationDetails(data);
+
     return res.status(200).json({
       success: true,
-      reservations: data || [],
+      reservations,
       pagination: {
         page: pagination.page,
         limit: pagination.limit,
@@ -294,9 +300,14 @@ async function getBusinessReservations(req, res) {
       );
     }
 
+    const reservations = await attachReservationDetails(
+      data,
+      { includeClient: true }
+    );
+
     return res.status(200).json({
       success: true,
-      reservations: data || [],
+      reservations,
       pagination: {
         page: pagination.page,
         limit: pagination.limit,
@@ -309,6 +320,105 @@ async function getBusinessReservations(req, res) {
 
   } catch (error) {
     console.error("Business reservations error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+}
+
+// GET /api/reservations/business/:businessId/summary
+// Read-only totals for the owner dashboard.
+async function getBusinessReservationSummary(req, res) {
+  const { businessId } = req.params;
+
+  if (!isValidId(businessId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid business ID"
+    });
+  }
+
+  try {
+    const allowed = await ownsBusiness(
+      req.user,
+      businessId
+    );
+
+    if (!allowed) {
+      return res.status(403).json({
+        success: false,
+        message: "You cannot access this business's reservations"
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("reservations")
+      .select(
+        "id, user_id, service_id, business_id, status, starts_at, ends_at, total_amount, deposit_amount, currency"
+      )
+      .eq("business_id", businessId)
+      .order("starts_at", { ascending: false })
+      .limit(1000);
+
+    if (error) {
+      return handleDatabaseError(
+        res,
+        error,
+        "Error retrieving reservation summary"
+      );
+    }
+
+    const rows = data || [];
+    const now = Date.now();
+    const byStatus = {};
+    let confirmedDeposits = 0;
+    let confirmedValue = 0;
+
+    for (const row of rows) {
+      byStatus[row.status] = (byStatus[row.status] || 0) + 1;
+
+      if (["CONFIRMED", "COMPLETED"].includes(row.status)) {
+        confirmedDeposits += Number(row.deposit_amount) || 0;
+        confirmedValue += Number(row.total_amount) || 0;
+      }
+    }
+
+    const upcomingRows = rows
+      .filter(
+        (row) =>
+          row.status === "CONFIRMED" &&
+          new Date(row.starts_at).getTime() >= now
+      )
+      .sort(
+        (a, b) => new Date(a.starts_at) - new Date(b.starts_at)
+      );
+
+    const upcoming = await attachReservationDetails(
+      upcomingRows.slice(0, 6),
+      { includeClient: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      summary: {
+        total: rows.length,
+        byStatus,
+        upcomingCount: upcomingRows.length,
+        pendingPaymentCount: byStatus.PENDING_PAYMENT || 0,
+        uniqueClients: new Set(rows.map((row) => row.user_id)).size,
+        confirmedDeposits:
+          Math.round(confirmedDeposits * 100) / 100,
+        confirmedValue:
+          Math.round(confirmedValue * 100) / 100,
+        currency: rows[0]?.currency || "PEN"
+      },
+      upcoming
+    });
+
+  } catch (error) {
+    console.error("Reservation summary error:", error);
 
     return res.status(500).json({
       success: false,
@@ -365,9 +475,14 @@ async function getReservationById(req, res) {
       });
     }
 
+    const [reservation] = await attachReservationDetails(
+      [data],
+      { includeClient: isBusinessManager }
+    );
+
     return res.status(200).json({
       success: true,
-      reservation: data
+      reservation
     });
 
   } catch (error) {
@@ -547,6 +662,7 @@ module.exports = {
   createReservation,
   getMyReservations,
   getBusinessReservations,
+  getBusinessReservationSummary,
   getReservationById,
   cancelReservation,
   getAvailableSlots

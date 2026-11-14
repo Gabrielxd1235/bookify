@@ -1,0 +1,127 @@
+/* BOOKIFY experience layer: feedback states, skeletons, mobile tables and booking flow polish.
+   Loaded last so it refines the base system without rewriting it. */
+
+/* ---------- Skeleton loading ---------- */
+.skeleton-block{position:relative;display:block;overflow:hidden;background:#e6ede6;border-radius:8px}
+.skeleton-block:after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,#ffffff8c 50%,transparent 80%);transform:translateX(-100%);animation:skeleton-sweep 1.5s ease-in-out infinite}
+.skeleton-line{height:12px;width:100%}
+.skeleton-line.mid{width:68%}
+.skeleton-line.short{width:38%}
+.skeleton-title{height:34px;width:60%;border-radius:10px}
+.skeleton-card{display:flex;flex-direction:column;gap:13px;padding:0 0 22px;background:#fff;border:1px solid #e9ede9;border-radius:17px;overflow:hidden}
+.skeleton-card>.skeleton-line{margin:0 20px;width:auto}
+.skeleton-card>.skeleton-line.mid{margin-right:32%}
+.skeleton-card>.skeleton-line.short{margin-right:62%;margin-top:6px}
+.skeleton-media{height:209px;border-radius:0}
+.skeleton-rows{display:flex;flex-direction:column}
+.skeleton-rows>div{display:flex;align-items:center;gap:14px;padding:16px 4px;border-bottom:1px solid #ecf0ea}
+.skeleton-rows>div:last-child{border-bottom:0}
+.skeleton-rows>div>div{flex:1;display:flex;flex-direction:column;gap:9px;min-width:0}
+.skeleton-avatar{width:40px;height:40px;border-radius:12px;flex-shrink:0}
+.skeleton-pill{width:84px;height:24px;border-radius:100px;flex-shrink:0}
+.skeleton-stat{display:inline-block;width:64px;height:30px;vertical-align:middle}
+.skeleton-detail{display:flex;flex-direction:column;gap:34px;padding-top:34px}
+.skeleton-detail>div{display:flex;flex-direction:column;gap:14px;max-width:560px}
+.skeleton-cover{height:302px;border-radius:20px}
+
+/* ---------- Auth ---------- */
+.auth-panel>.eyebrow{display:block}
+.password-toggle{border-radius:8px;transition:color .2s,background .2s}
+.password-toggle:hover{color:var(--forest);background:#eef5f0}
+.password-rules{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 14px;margin:-6px 0 0;padding:0}
+.password-rules li{display:flex;align-items:center;gap:8px;font-size:.72rem;font-weight:600;color:#8f9e91;transition:color .2s}
+.rule-mark{display:grid;place-items:center;width:16px;height:16px;border-radius:50%;border:1.5px solid #cfdad1;color:#fff;flex-shrink:0;transition:background .2s,border-color .2s,transform .25s var(--ease-out)}
+.password-rules li.met{color:#2f6b55}
+.password-rules li.met .rule-mark{background:#2f7d5e;border-color:#2f7d5e;transform:scale(1.08)}
+.password-rules.attempted li:not(.met){color:#b54e46}
+.password-rules.attempted li:not(.met) .rule-mark{border-color:#d9a09a}
+.form-field input.input-error{background:#fffafa;box-shadow:0 0 0 3px #bd686114}
+.form-field .error-text{font-weight:600}
+
+/* ---------- Business detail & booking widget ---------- */
+.no-slots{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.no-slots-next{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfdfd5;background:#fff;color:var(--forest);font-size:.74rem;font-weight:800;padding:8px 12px;border-radius:9px;min-height:36px;transition:background .2s,border-color .2s,gap .2s}
+.no-slots-next:hover{background:#eef6f1;border-color:#9fc3b1;gap:9px}
+.slot{transition:background .2s,color .2s,border-color .2s,box-shadow .2s,transform .2s var(--ease-out)}
+.slot:active{transform:scale(.96)}
+.booking-when{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:11px 13px;border-radius:10px;background:#edf6f0;color:#2f6b55;font-size:.78rem;animation:page-enter .3s var(--ease-out)}
+.booking-when strong{margin-left:auto;color:#1d4f44}
+.detail-mobile-bar{display:none}
+
+/* ---------- Checkout ---------- */
+.checkout-timer{font-variant-numeric:tabular-nums;transition:background .3s,color .3s}
+.checkout-timer-urgent{background:#fdeee6;color:#b2542a;animation:timer-pulse 1.2s ease-in-out infinite}
+@keyframes timer-pulse{50%{box-shadow:0 0 0 4px #e9844a26}}
+.checkout-complete>span{animation:success-pop .55s var(--ease-out) both;box-shadow:0 0 0 10px #dcf3e466}
+.checkout-complete>span svg{stroke-dasharray:30;stroke-dashoffset:30;animation:success-draw .45s .3s ease-out forwards}
+.checkout-complete h2,.checkout-complete p,.checkout-complete .btn{animation:page-enter .45s .25s var(--ease-out) both}
+@keyframes success-pop{from{opacity:0;transform:scale(.5)}60%{transform:scale(1.08)}to{opacity:1;transform:scale(1)}}
+@keyframes success-draw{to{stroke-dashoffset:0}}
+
+/* ---------- Toasts ---------- */
+.toast{position:relative;overflow:hidden}
+.toast button{background:transparent;border:0;color:inherit;opacity:.75;padding:2px;border-radius:6px;flex-shrink:0;margin-left:auto}
+.toast button:hover{opacity:1;background:#ffffff1f}
+.toast-progress{position:absolute;left:0;bottom:0;height:3px;width:100%;background:#ffffff59;transform-origin:left;animation:toast-progress 5.5s linear forwards}
+@keyframes toast-progress{to{transform:scaleX(0)}}
+
+/* ---------- Client dashboard ---------- */
+.pending-callout{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding:15px 18px;border-radius:14px;background:#fff8e8;border:1px solid #f0dfb6;color:#6f5718;transition:border-color .2s,box-shadow .2s,transform .25s var(--ease-out)}
+.pending-callout:hover{border-color:#dfc27c;box-shadow:0 8px 22px #ac7e2c1a;transform:translateY(-1px)}
+.pending-callout>div{flex:1;min-width:0}
+.pending-callout strong,.pending-callout small{display:block}
+.pending-callout strong{font-size:.86rem;color:#5c4710}
+.pending-callout small{margin-top:4px;font-size:.74rem;color:#8a7335}
+.pending-callout-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fbeecb;color:#a67a22;flex-shrink:0}
+.pending-callout-action{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:800;color:#8a6417;white-space:nowrap}
+.client-next h2{overflow-wrap:anywhere}
+.client-next-meta{display:flex;flex-wrap:wrap;gap:8px 20px}
+.client-next-meta span{display:inline-flex;align-items:center;gap:7px}
+
+/* ---------- Mobile ---------- */
+@media(max-width:760px){
+  /* Business detail: identity first, then booking, then the rest. */
+  .detail-left{display:contents}
+  .detail-intro{order:-2}
+  .detail-main{margin-top:26px;gap:26px}
+  .detail-section{order:0;margin-top:8px}
+  .detail-page{padding-bottom:120px}
+  .skeleton-cover{height:240px}
+  .detail-mobile-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 19px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid var(--line);box-shadow:0 -8px 24px #19302c14;backdrop-filter:blur(8px);animation:bar-rise .3s var(--ease-out)}
+  .detail-mobile-bar>div{min-width:0}
+  .detail-mobile-bar small{display:block;font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .detail-mobile-bar strong{display:block;font-size:1.05rem;color:var(--ink)}
+  .detail-mobile-bar .btn{flex-shrink:0;min-height:46px}
+
+  /* Toasts sit at the top so they never cover bottom calls to action. */
+  .toast-stack{top:12px;bottom:auto;left:12px;right:12px;max-width:none}
+
+  /* Tables become stacked cards instead of scrolling sideways. */
+  .table-scroll{overflow-x:visible}
+  .data-table{min-width:0;display:block}
+  .data-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .data-table tbody{display:flex;flex-direction:column;gap:12px}
+  .data-table tr{display:block;border:1px solid #e6ece6;border-radius:14px;padding:6px 15px;background:#fff}
+  .data-table td{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #f0f3ef;text-align:right;overflow-wrap:anywhere}
+  .data-table tbody tr td:last-child,.data-table tbody tr:last-child td:last-child{border-bottom:0}
+  .data-table tbody tr:last-child td{border-bottom:1px solid #f0f3ef}
+  .data-table td[data-label]:before{content:attr(data-label);flex-shrink:0;font-size:.66rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a9a8f;text-align:left}
+  .data-table td:first-child{display:block;text-align:left;padding-top:13px}
+  .data-table td:first-child:before{display:none}
+  .data-table td:first-child strong{font-size:.9rem}
+  .data-table td small{margin-top:3px}
+  .data-table td.cell-actions:empty,.data-table td.cell-actions:has(.booking-actions:empty){display:none}
+  .data-table .booking-actions{flex-direction:row;flex-wrap:wrap;width:100%;gap:8px}
+  .data-table .booking-actions .btn{flex:1;min-height:42px}
+
+  .pending-callout{flex-wrap:wrap}
+  .pending-callout-action{width:100%;padding-left:54px}
+  .password-rules{grid-template-columns:1fr 1fr}
+}
+@keyframes bar-rise{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+@media(prefers-reduced-motion:reduce){
+  .skeleton-block:after{animation:none!important}
+  .checkout-complete>span svg{stroke-dashoffset:0}
+  .toast-progress{display:none}
+}

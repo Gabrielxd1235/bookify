@@ -10,6 +10,7 @@ const RESERVATION_FIELDS = `
   user_id,
   service_id,
   business_id,
+  kind,
   starts_at,
   ends_at,
   status,
@@ -112,7 +113,7 @@ async function ownsBusiness(user, businessId) {
 
 // POST /api/reservations
 async function createReservation(req, res) {
-  const { service_id, starts_at, notes } = req.body || {};
+  const { service_id, starts_at, start_date, notes } = req.body || {};
 
   if (!isValidId(service_id)) {
     return res.status(400).json({
@@ -121,7 +122,30 @@ async function createReservation(req, res) {
     });
   }
 
-  if (
+  // Subscriptions, packages and day passes are bought with a start
+  // date instead of a time slot.
+  const isPurchase =
+    start_date !== undefined && start_date !== null;
+
+  if (isPurchase) {
+    const parsed =
+      typeof start_date === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(start_date)
+        ? new Date(`${start_date}T00:00:00Z`)
+        : null;
+
+    if (
+      starts_at !== undefined ||
+      !parsed ||
+      Number.isNaN(parsed.getTime()) ||
+      parsed.toISOString().slice(0, 10) !== start_date
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Send a valid start_date (YYYY-MM-DD) and no starts_at"
+      });
+    }
+  } else if (
     typeof starts_at !== "string" ||
     !/T.*(?:Z|[+-]\d{2}:\d{2})$/i.test(starts_at) ||
     Number.isNaN(Date.parse(starts_at))
@@ -149,15 +173,25 @@ async function createReservation(req, res) {
   try {
     // The user ID comes from the verified JWT.
     // Prices and availability are calculated in PostgreSQL.
-    const { data, error } = await supabase.rpc(
-      "create_pending_reservation",
-      {
-        p_user_id: req.user.id,
-        p_service_id: Number(service_id),
-        p_starts_at: starts_at,
-        p_notes: notes || null
-      }
-    );
+    const { data, error } = isPurchase
+      ? await supabase.rpc(
+          "create_pending_purchase",
+          {
+            p_user_id: req.user.id,
+            p_service_id: Number(service_id),
+            p_start_date: start_date,
+            p_notes: notes || null
+          }
+        )
+      : await supabase.rpc(
+          "create_pending_reservation",
+          {
+            p_user_id: req.user.id,
+            p_service_id: Number(service_id),
+            p_starts_at: starts_at,
+            p_notes: notes || null
+          }
+        );
 
     if (error) {
       return handleDatabaseError(
@@ -356,7 +390,7 @@ async function getBusinessReservationSummary(req, res) {
     const { data, error } = await supabase
       .from("reservations")
       .select(
-        "id, user_id, service_id, business_id, status, starts_at, ends_at, total_amount, deposit_amount, currency"
+        "id, user_id, service_id, business_id, kind, status, starts_at, ends_at, total_amount, deposit_amount, currency"
       )
       .eq("business_id", businessId)
       .order("starts_at", { ascending: false })
@@ -407,6 +441,13 @@ async function getBusinessReservationSummary(req, res) {
         byStatus,
         upcomingCount: upcomingRows.length,
         pendingPaymentCount: byStatus.PENDING_PAYMENT || 0,
+        activePlans: rows.filter(
+          (row) =>
+            row.kind &&
+            row.kind !== "APPOINTMENT" &&
+            row.status === "CONFIRMED" &&
+            new Date(row.ends_at).getTime() > now
+        ).length,
         uniqueClients: new Set(rows.map((row) => row.user_id)).size,
         confirmedDeposits:
           Math.round(confirmedDeposits * 100) / 100,

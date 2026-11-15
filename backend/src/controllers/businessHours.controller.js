@@ -1,7 +1,7 @@
 const supabase = require("../config/supabase");
 
 const HOURS_FIELDS =
-  "id, business_id, weekday, opens_at, closes_at, is_closed";
+  "id, business_id, weekday, opens_at, closes_at, is_closed, break_starts_at, break_ends_at";
 
 const isValidId = (value) =>
   /^[1-9]\d*$/.test(String(value ?? ""));
@@ -55,7 +55,9 @@ function validateHours(body) {
       values: {
         opens_at: null,
         closes_at: null,
-        is_closed: true
+        is_closed: true,
+        break_starts_at: null,
+        break_ends_at: null
       }
     };
   }
@@ -75,11 +77,42 @@ function validateHours(body) {
     };
   }
 
+  // Optional break in the middle of the day (split shift)
+  const hasBreak =
+    (body.break_starts_at ?? null) !== null ||
+    (body.break_ends_at ?? null) !== null;
+
+  let breakStartsAt = null;
+  let breakEndsAt = null;
+
+  if (hasBreak) {
+    breakStartsAt = normalizeTime(body.break_starts_at);
+    breakEndsAt = normalizeTime(body.break_ends_at);
+
+    if (!breakStartsAt || !breakEndsAt) {
+      return {
+        error: "A break needs both a valid start and end time"
+      };
+    }
+
+    if (
+      breakStartsAt <= opensAt ||
+      breakStartsAt >= breakEndsAt ||
+      breakEndsAt >= closesAt
+    ) {
+      return {
+        error: "The break must fall inside the opening hours"
+      };
+    }
+  }
+
   return {
     values: {
       opens_at: opensAt,
       closes_at: closesAt,
-      is_closed: false
+      is_closed: false,
+      break_starts_at: breakStartsAt,
+      break_ends_at: breakEndsAt
     }
   };
 }

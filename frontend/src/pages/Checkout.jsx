@@ -5,6 +5,7 @@ import { dateTime, money } from '../lib/format.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Link } from '../lib/router.jsx';
 import { useReservationNames } from '../lib/reservationNames.js';
+import { isAppointment, reservationKindLabel, reservationWhen } from '../lib/serviceModels.js';
 import { Icon } from '../components/Icon.jsx';
 import { Alert, Button, Card, Empty, Loading, PageHead, Status } from '../components/UI.jsx';
 
@@ -84,7 +85,7 @@ export function Checkout({ id }) {
         <div className="checkout-rows">
           <div><span>Service</span><strong>{names.serviceName(reservation.service_id)}</strong></div>
           <div><span>Business</span><strong>{names.businessName(reservation.business_id)}</strong></div>
-          <div><span>Appointment</span><strong>{dateTime(reservation.starts_at)}</strong></div>
+          {isAppointment(reservation) ? <div><span>Appointment</span><strong>{dateTime(reservation.starts_at)}</strong></div> : <><div><span>Plan</span><strong>{reservationKindLabel(reservation)}</strong></div><div><span>Valid</span><strong>{reservationWhen(reservation)}</strong></div></>}
           <div><span>Full service price</span><strong>{money(reservation.total_amount, currency)}</strong></div>
           <div className="checkout-amount"><span>Deposit — 50% due now</span><strong>{money(reservation.deposit_amount, currency)}</strong></div>
           <div><span>Balance to pay at the business</span><strong>{money(reservation.balance_amount, currency)}</strong></div>

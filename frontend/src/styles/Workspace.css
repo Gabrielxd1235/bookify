@@ -53,6 +53,140 @@
 .category-menu-panel>button.active .category-menu-icon{background:var(--forest);color:#fff}
 .category-menu-check{color:var(--forest);flex-shrink:0}
 
+/* ---------- Service models (appointment / subscription / package / day pass) ---------- */
+.is-hidden{display:none!important}
+.price-unit{font-size:.72em;font-weight:600;color:var(--muted);letter-spacing:0;white-space:nowrap}
+.model-picker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.model-option{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:16px 15px;border:1.5px solid #e1e9e3;border-radius:14px;background:#fff;color:var(--ink);text-align:left;transition:border-color .2s,background .2s,box-shadow .2s,transform .25s var(--ease-out)}
+.model-option:hover{border-color:#a9c6b8;transform:translateY(-1px)}
+.model-option.active{border-color:var(--forest);background:#f3f9f5;box-shadow:0 8px 20px #245e541a}
+.model-option.active:after{content:"";position:absolute;top:12px;right:12px;width:18px;height:18px;border-radius:50%;background:var(--forest) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12 4 4 8-9'/%3E%3C/svg%3E") center/11px no-repeat}
+.model-option-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:11px;background:#edf5ef;color:var(--forest);transition:background .2s,color .2s}
+.model-option.active .model-option-icon{background:var(--forest);color:#fff}
+.model-option strong{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:4px;font-size:.88rem}
+.model-option strong em{font-style:normal;font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:100px;background:#fbeecb;color:#8a6417}
+.model-option small{font-size:.74rem;line-height:1.45;color:var(--muted)}
+.model-option small.model-option-example{color:#9aa8a0;font-size:.7rem}
+.model-note{display:flex;align-items:center;gap:8px;min-height:44px;margin:0;padding:0 13px;border-radius:10px;background:#f6f9f6;font-size:.8rem;color:#55665d}
+.model-note svg{color:#c39a45;flex-shrink:0}
+.model-preview{display:flex;align-items:center;gap:14px;padding:15px 17px;border-radius:13px;background:linear-gradient(120deg,#f1f8f4,#f8fbf8);border:1px dashed #c9ddd1}
+.model-preview>div{min-width:0}
+.model-preview small{font-size:.6rem;font-weight:800;letter-spacing:.12em;color:#7b9186}
+.model-preview strong{display:block;margin:4px 0 3px;font-size:.92rem;overflow-wrap:anywhere}
+.model-preview strong span{font-size:.78rem;font-weight:600;color:var(--muted)}
+.model-preview p{margin:0;font-size:.76rem;color:var(--muted);line-height:1.5}
+.model-badge{display:inline-flex;align-items:center;margin-left:9px;padding:3px 8px;border-radius:100px;font-size:.6rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle;background:#e8f1ec;color:#2f6b55}
+.model-badge.model-subscription{background:#e8eff7;color:#476f9b}
+.model-badge.model-package{background:#ede7f9;color:#7554a5}
+.model-badge.model-day-pass{background:#fbeecb;color:#8a6417}
+.service-manage-content strong{display:block}
+.service-manage-price{white-space:nowrap;text-align:right}
+.service-manage-price small{font-size:.72rem;font-weight:600;color:var(--muted)}
+.plan-summary{display:flex;align-items:center;gap:13px;margin-bottom:17px;padding:14px 15px;border-radius:12px;background:#edf6f0;border:1px solid #d6e8dd;animation:page-enter .3s var(--ease-out)}
+.plan-summary>span{display:grid;place-items:center;flex:0 0 40px;height:40px;border-radius:11px;background:var(--forest);color:#fff}
+.plan-summary strong,.plan-summary small{display:block}
+.plan-summary strong{font-size:.84rem;color:#1d4f44}
+.plan-summary small{margin-top:4px;font-size:.74rem;color:#55665d;line-height:1.45}
+.plan-list{display:flex;flex-direction:column}
+.plan-item{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--line)}
+.plan-item:first-child{padding-top:0}
+.plan-item:last-child{border-bottom:0;padding-bottom:0}
+.plan-item>div{flex:1;min-width:0}
+.plan-item strong,.plan-item small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-item strong{font-size:.86rem}
+.plan-item small{margin-top:5px;font-size:.73rem;color:var(--muted)}
+.plan-until{flex-shrink:0;padding:6px 11px;border-radius:100px;background:#e5f5e9;color:#327e57;font-size:.7rem;font-weight:800;white-space:nowrap}
+.live-dot.plans-dot:before{background:#f1d27e;box-shadow:none;animation:none}
+@media(max-width:980px){.model-picker{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){
+  .model-picker{grid-template-columns:1fr}
+  .model-option{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:12px}
+  .model-option strong{margin-top:0;flex:1}
+  .model-option small{flex-basis:100%}
+  .service-manage-list>div{flex-wrap:wrap}
+  .service-manage-content{flex-basis:calc(100% - 60px)}
+  .plan-item{flex-wrap:wrap}
+  .plan-until{margin-left:52px}
+}
+
+/* ---------- Owner: weekly schedule editor ---------- */
+.schedule-summary{display:flex;align-items:center;gap:18px;margin-bottom:22px;padding:18px 22px;border-radius:16px;background:linear-gradient(115deg,#1f5548,#2f6f5e);color:#fff;animation:page-enter .4s var(--ease-out) both}
+.schedule-summary strong,.schedule-summary small{display:block}
+.schedule-summary strong{font-size:1.05rem}
+.schedule-summary small{margin-top:5px;font-size:.78rem;color:#cfe2d8}
+.schedule-week{display:flex;gap:6px;flex-shrink:0}
+.schedule-week span{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;border:1px solid #ffffff33;font-size:.72rem;font-weight:800;color:#ffffff80;transition:background .25s,color .25s,border-color .25s}
+.schedule-week span.open{background:#fff;border-color:#fff;color:#1f5548}
+.schedule-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.schedule-presets button{display:flex;flex-direction:column;gap:5px;padding:14px 15px;border:1px solid #e1e9e3;border-radius:13px;background:#fff;color:var(--ink);text-align:left;transition:border-color .2s,background .2s,transform .25s var(--ease-out)}
+.schedule-presets button:hover{border-color:#8fb8a6;background:#f5faf7;transform:translateY(-1px)}
+.schedule-presets button:active{transform:scale(.98)}
+.schedule-presets strong{font-size:.86rem}
+.schedule-presets small{font-size:.73rem;color:var(--muted)}
+.schedule-list{display:flex;flex-direction:column;gap:10px}
+.schedule-day{display:grid;grid-template-columns:190px minmax(0,1fr) auto;gap:16px;align-items:start;padding:14px 16px;border:1px solid #e7ede8;border-radius:14px;background:#fff;transition:border-color .2s,background .2s}
+.schedule-day.is-closed{background:#fafbfa}
+.schedule-day.has-error{border-color:#e2b3ae;background:#fffafa}
+.schedule-day-head{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.access-toggle.schedule-toggle{min-height:40px;padding:0 4px;border:0;background:transparent;font-size:.88rem;font-weight:800;color:#8a9a91}
+.access-toggle.schedule-toggle.on{color:var(--ink);background:transparent}
+.access-toggle.schedule-toggle .access-switch{background:#cfd8d2}
+.access-toggle.schedule-toggle.on .access-switch{background:#2f8a66}
+.access-toggle.schedule-toggle input{position:absolute;opacity:0;width:1px;height:1px}
+.schedule-dirty{margin-left:4px;padding:3px 8px;border-radius:100px;background:#fbeecb;color:#8a6417;font-size:.6rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.schedule-day-body{display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-width:0}
+.schedule-range{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.schedule-range>span{font-size:.76rem;color:var(--muted)}
+.schedule-range>small{min-width:42px;font-size:.66rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#a67a22}
+.schedule-break{padding:8px 11px;border-radius:11px;background:#fdf8ea;border:1px dashed #ecd9a8}
+.time-field{display:inline-flex;align-items:center;gap:2px;height:42px;padding:0 5px 0 9px;border:1px solid #dce5dd;border-radius:11px;background:#fff;color:var(--ink);transition:border-color .2s,box-shadow .2s}
+.time-field:focus-within{border-color:#5b9279;box-shadow:0 0 0 4px #3d826b13}
+.time-field input{width:30px;height:30px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--ink);font:700 .92rem "Manrope","DM Sans",sans-serif;text-align:center;outline:none;font-variant-numeric:tabular-nums;transition:background .15s}
+.time-field input:hover{background:#f3f7f4}
+.time-field input:focus{background:#e6f1ea}
+.time-field>span[aria-hidden]{font-weight:800;color:#8a9a91;margin:0 -1px 2px}
+.time-period{display:inline-flex;gap:2px;margin-left:7px;padding:3px;border-radius:8px;background:#eef3ee}
+.time-period button{min-width:34px;height:28px;padding:0 6px;border:0;border-radius:6px;background:transparent;color:#7b8f84;font-size:.68rem;font-weight:800;letter-spacing:.04em;transition:background .15s,color .15s,box-shadow .15s}
+.time-period button:hover{color:var(--forest)}
+.time-period button.active{background:#fff;color:#1d4f44;box-shadow:0 1px 4px #173f251f}
+.schedule-link{display:inline-flex;align-items:center;gap:6px;padding:4px 2px;border:0;background:transparent;color:var(--forest);font-size:.77rem;font-weight:800}
+.schedule-link:hover{text-decoration:underline}
+.schedule-link.danger{color:#aa4744}
+.schedule-closed{margin:9px 0 0;font-size:.8rem;color:#9aa8a0;line-height:1.5}
+.schedule-day-side{display:flex;align-items:center;gap:10px;padding-top:2px}
+.schedule-hours{padding:6px 10px;border-radius:100px;background:#edf5ef;color:#2f6b55;font-size:.72rem;font-weight:800;white-space:nowrap}
+.schedule-copy{position:relative}
+.schedule-copy .icon-btn{width:38px;height:38px;color:#6f8379}
+.schedule-menu{position:absolute;z-index:20;top:calc(100% + 6px);right:0;width:210px;padding:7px;border:1px solid #e1e9e3;border-radius:13px;background:#fff;box-shadow:0 16px 38px #19302c1f;animation:menu-enter .18s var(--ease-out)}
+.schedule-menu span{display:block;padding:6px 9px 8px;font-size:.62rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#8a9a91}
+.schedule-menu button{display:block;width:100%;padding:10px 9px;border:0;border-radius:9px;background:transparent;color:#3f5248;font-size:.82rem;font-weight:600;text-align:left}
+.schedule-menu button:hover,.schedule-menu button:focus-visible{background:#f2f8f4;outline:0}
+.schedule-savebar{position:sticky;bottom:16px;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:4px;padding:13px 16px 13px 20px;border-radius:15px;background:#fff;border:1px solid #e1e9e3;box-shadow:0 14px 36px #19302c1a;font-size:.82rem;font-weight:700;color:#55665d;transition:border-color .25s,box-shadow .25s}
+.schedule-savebar.visible{border-color:#e6cf93;box-shadow:0 16px 40px #ac7e2c26;color:#6f5718}
+.schedule-savebar>div{display:flex;gap:9px}
+.schedule-savebar:not(.visible){display:none}
+.schedule-savebar.visible{animation:page-enter .25s var(--ease-out)}
+@media(max-width:980px){
+  .schedule-presets{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .schedule-day{grid-template-columns:minmax(0,1fr) auto}
+  .schedule-day-head{flex-direction:row;align-items:center}
+  .schedule-day-body,.schedule-closed{grid-column:1/-1;grid-row:2}
+  .schedule-day-side{grid-column:2;grid-row:1}
+}
+@media(max-width:560px){
+  .schedule-summary{flex-direction:column;align-items:flex-start;padding:17px}
+  .schedule-presets{grid-template-columns:1fr 1fr}
+  .schedule-range{gap:6px;flex-wrap:nowrap}
+  .schedule-range.schedule-break{flex-wrap:wrap}
+  .time-field{padding:0 4px 0 6px}
+  .time-field input{width:25px}
+  .time-period{margin-left:3px}
+  .time-period button{min-width:29px;padding:0 4px}
+  .schedule-range{width:100%}
+  .schedule-savebar{flex-direction:column;align-items:stretch;text-align:center}
+  .schedule-savebar>div .btn{flex:1}
+}
+
 /* ---------- Booking widget: business without published services ---------- */
 .booking-card.no-services>*:not(.booking-head):not(.booking-empty):not(.alert){display:none}
 .booking-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px 4px;text-align:center}

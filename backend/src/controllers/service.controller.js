@@ -2,7 +2,105 @@ const supabase = require("../config/supabase");
 
 // Database fields returned by service queries
 const SERVICE_FIELDS =
-  "id, business_id, name, description, price, duration_minutes, is_active, created_at, updated_at";
+  "id, business_id, name, description, price, duration_minutes, service_type, billing_period, sessions_included, validity_days, is_active, created_at, updated_at";
+
+// How a service is sold
+const SERVICE_TYPES = [
+  "APPOINTMENT",
+  "SUBSCRIPTION",
+  "PACKAGE",
+  "DAY_PASS"
+];
+
+const BILLING_PERIODS = ["WEEK", "MONTH", "QUARTER", "YEAR"];
+
+// Session length used when a non-appointment service does not send one
+const DEFAULT_SESSION_MINUTES = 60;
+
+const isMissing = (value) =>
+  value === undefined || value === null || value === "";
+
+// Validate the fields that depend on the service model.
+// Fields that do not belong to the chosen model are cleared, so a
+// service can never keep stale values from a previous model.
+function validateServiceModel(body, partial, values) {
+  const modelFields = [
+    "billing_period",
+    "sessions_included",
+    "validity_days"
+  ];
+
+  if (body.service_type === undefined) {
+    if (
+      partial &&
+      modelFields.some((field) => body[field] !== undefined)
+    ) {
+      return "service_type is required when changing the service model";
+    }
+
+    if (partial) {
+      return null;
+    }
+  }
+
+  const type = body.service_type ?? "APPOINTMENT";
+
+  if (!SERVICE_TYPES.includes(type)) {
+    return "Service type must be APPOINTMENT, SUBSCRIPTION, PACKAGE or DAY_PASS";
+  }
+
+  values.service_type = type;
+  values.billing_period = null;
+  values.sessions_included = null;
+  values.validity_days = null;
+
+  if (type === "SUBSCRIPTION") {
+    if (!BILLING_PERIODS.includes(body.billing_period)) {
+      return "Subscriptions need a billing period: WEEK, MONTH, QUARTER or YEAR";
+    }
+
+    values.billing_period = body.billing_period;
+  }
+
+  if (type === "PACKAGE") {
+    const sessions = Number(body.sessions_included);
+
+    if (
+      isMissing(body.sessions_included) ||
+      !Number.isInteger(sessions) ||
+      sessions < 1 ||
+      sessions > 500
+    ) {
+      return "Packages need between 1 and 500 sessions";
+    }
+
+    const validity = isMissing(body.validity_days)
+      ? 90
+      : Number(body.validity_days);
+
+    if (
+      !Number.isInteger(validity) ||
+      validity < 1 ||
+      validity > 730
+    ) {
+      return "Package validity must be between 1 and 730 days";
+    }
+
+    values.sessions_included = sessions;
+    values.validity_days = validity;
+  }
+
+  // Everything except an appointment is paid up front, so it cannot be free
+  if (
+    type !== "APPOINTMENT" &&
+    values.price !== undefined &&
+    values.price <= 0
+  ) {
+    return "Subscriptions, packages and day passes need a price above zero";
+  }
+
+  return null;
+}
 
 // Validate database IDs
 const isValidId = (value) =>
@@ -73,7 +171,21 @@ function validateService(body, partial = false) {
     values.price = price;
   }
 
-  if (!partial || body.duration_minutes !== undefined) {
+  const modelError = validateServiceModel(body, partial, values);
+
+  if (modelError) {
+    return { error: modelError };
+  }
+
+  // Only appointments are sold by duration; the other models fall back
+  // to a default session length when none is sent.
+  if (
+    values.service_type !== undefined &&
+    values.service_type !== "APPOINTMENT" &&
+    isMissing(body.duration_minutes)
+  ) {
+    values.duration_minutes = DEFAULT_SESSION_MINUTES;
+  } else if (!partial || body.duration_minutes !== undefined) {
     const duration = Number(body.duration_minutes);
 
     if (

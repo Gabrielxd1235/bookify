@@ -11,15 +11,15 @@ function uniqueValues(rows, field) {
   ];
 }
 
-// Load "id -> label" pairs for a list of IDs
-async function loadLabels(table, labelField, ids) {
+// Load "id -> row" pairs for a list of IDs
+async function loadRows(table, fields, ids) {
   if (ids.length === 0) {
     return new Map();
   }
 
   const { data, error } = await supabase
     .from(table)
-    .select(`id, ${labelField}`)
+    .select(`id, ${fields}`)
     .in("id", ids);
 
   if (error) {
@@ -27,7 +27,16 @@ async function loadLabels(table, labelField, ids) {
   }
 
   return new Map(
-    (data || []).map((row) => [String(row.id), row[labelField]])
+    (data || []).map((row) => [String(row.id), row])
+  );
+}
+
+// Load "id -> label" pairs for a list of IDs
+async function loadLabels(table, labelField, ids) {
+  const rows = await loadRows(table, labelField, ids);
+
+  return new Map(
+    [...rows].map(([id, row]) => [id, row[labelField]])
   );
 }
 
@@ -44,7 +53,11 @@ async function attachReservationDetails(rows, options = {}) {
 
   try {
     const [services, businesses, clients] = await Promise.all([
-      loadLabels("services", "name", uniqueValues(list, "service_id")),
+      loadRows(
+        "services",
+        "name, billing_period, sessions_included",
+        uniqueValues(list, "service_id")
+      ),
       loadLabels("businesses", "name", uniqueValues(list, "business_id")),
       options.includeClient
         ? loadLabels("users", "full_name", uniqueValues(list, "user_id"))
@@ -54,7 +67,12 @@ async function attachReservationDetails(rows, options = {}) {
     return list.map((row) => {
       const detailed = {
         ...row,
-        service_name: services.get(String(row.service_id)) || null,
+        service_name:
+          services.get(String(row.service_id))?.name || null,
+        billing_period:
+          services.get(String(row.service_id))?.billing_period || null,
+        sessions_included:
+          services.get(String(row.service_id))?.sessions_included || null,
         business_name: businesses.get(String(row.business_id)) || null
       };
 

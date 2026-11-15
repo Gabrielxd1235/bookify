@@ -145,7 +145,7 @@ async function getOverview(req, res) {
     const { data: recent, error: recentError } = await supabase
       .from("reservations")
       .select(
-        "id, user_id, service_id, business_id, status, starts_at, total_amount, deposit_amount, currency, created_at"
+        "id, user_id, service_id, business_id, kind, status, starts_at, ends_at, total_amount, deposit_amount, currency, created_at"
       )
       .order("created_at", { ascending: false })
       .limit(6);

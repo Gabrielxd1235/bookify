@@ -96,6 +96,16 @@ function randomPassword() {
 
 // One run id shared by every VU, so emails never collide between runs
 export function setup() {
+  // Fail fast with a clear message when BASE_URL is empty or the API is down
+  // (e.g. $api not defined in a new PowerShell window -> localhost:3000).
+  const health = http.get(`${BASE_URL}/api/health`, { timeout: "60s" });
+  if (health.status !== 200) {
+    exec.test.abort(
+      `No se pudo contactar la API en "${BASE_URL}" (HTTP ${health.status}). ` +
+      `Define $api en esta PowerShell y vuelve a ejecutar.`
+    );
+  }
+
   // RUN_ID can be fixed by the PowerShell runner to count the run afterwards
   const runId = /^[a-z0-9]{6,24}$/.test(__ENV.RUN_ID || "")
     ? __ENV.RUN_ID

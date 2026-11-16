@@ -106,6 +106,16 @@ export const options = {
 };
 
 export function setup() {
+  // Fail fast with a clear message when BASE_URL is empty or the API is down
+  // (e.g. $api not defined in a new PowerShell window -> localhost:3000).
+  const health = http.get(`${BASE_URL}/api/health`, { timeout: "60s" });
+  if (health.status !== 200) {
+    exec.test.abort(
+      `No se pudo contactar la API en "${BASE_URL}" (HTTP ${health.status}). ` +
+      `Define $api en esta PowerShell y vuelve a ejecutar.`
+    );
+  }
+
   const sessionCount = Math.min(VIRTUAL_USERS, accounts.length);
   const tokens = [];
 

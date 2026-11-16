@@ -96,10 +96,13 @@ function randomPassword() {
 
 // One run id shared by every VU, so emails never collide between runs
 export function setup() {
-  const runId = (
-    Date.now().toString(36) +
-    Math.floor(Math.random() * 1e6).toString(36)
-  ).toLowerCase();
+  // RUN_ID can be fixed by the PowerShell runner to count the run afterwards
+  const runId = /^[a-z0-9]{6,24}$/.test(__ENV.RUN_ID || "")
+    ? __ENV.RUN_ID
+    : (
+        Date.now().toString(36) +
+        Math.floor(Math.random() * 1e6).toString(36)
+      ).toLowerCase();
 
   console.log(`Run id: ${runId} (emails loadtest-reg${runId}-NNNNN@example.test)`);
 

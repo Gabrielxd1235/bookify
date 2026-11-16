@@ -149,3 +149,13 @@ perfil) y más usuarios virtuales. Medido contra Azure el 16/11/2026, ventana de
 (302 guardadas dentro de los primeros 2 s según `created_at`). El techo es la API
 (~150 registros/s con 0,5 vCPU y 1 réplica). `-e WARMUP=1` abre las conexiones antes
 de la ventana; no cambió el resultado.
+
+### Un solo comando: `run-bookify-register.ps1`
+
+Desde `backend` (registra, abre el dashboard en vivo y cuenta en Supabase al final):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key                      # 5000 cuentas
+powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2  # cuántas en 2 s
+powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Full -VirtualUsers 50     # + login y perfil
+```

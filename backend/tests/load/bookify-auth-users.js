@@ -15,8 +15,7 @@ const accounts = new SharedArray(
     const files = __ENV.USERS_FILES
       ? __ENV.USERS_FILES.split(",")
       : [
-          "./private/bookify-users-mwinc5qd566ff647.csv",
-          "./private/bookify-users-mwinewgu4f2daf9a.csv"
+          "./private/bookify-users-latest.csv"
         ];
 
     const allAccounts = [];

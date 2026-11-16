@@ -20,7 +20,7 @@ const accounts = new SharedArray(
   function () {
     const file =
       __ENV.USERS_FILE ||
-      "./private/bookify-users-mwinc5qd566ff647.csv";
+      "./private/bookify-users-latest.csv";
 
     const lines = open(file)
       .trim()

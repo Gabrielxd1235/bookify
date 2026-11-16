@@ -30,7 +30,14 @@ const privateDir = path.join(__dirname, "../tests/load/private");
 function readAccounts() {
   const files = fs
     .readdirSync(privateDir)
-    .filter((f) => /^bookify-users-.*\.csv$/.test(f));
+    .filter((f) => /^bookify-users-.*\.csv$/.test(f))
+    // Only the latest seeder file when it exists: older CSVs may list
+    // accounts already removed by sql/cleanup-load-test-users.sql
+    .filter(
+      (f, _, all) =>
+        !all.includes("bookify-users-latest.csv") ||
+        f === "bookify-users-latest.csv"
+    );
 
   const byEmail = new Map();
 

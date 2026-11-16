@@ -10,7 +10,15 @@ const supabase = require("../src/config/supabase");
 // BOOKIFY load test configuration
 const TOTAL_USERS = Number(process.argv[2] || 1000);
 const BATCH_SIZE = 50;
-const BCRYPT_ROUNDS = 12;
+// --rounds 4 creates fast-login load-test accounts directly (default 12)
+const roundsArg = process.argv.indexOf("--rounds");
+const BCRYPT_ROUNDS =
+  roundsArg > -1 ? Number(process.argv[roundsArg + 1]) : 12;
+
+if (!Number.isInteger(BCRYPT_ROUNDS) || BCRYPT_ROUNDS < 4 || BCRYPT_ROUNDS > 14) {
+  console.error("--rounds must be an integer between 4 and 14");
+  process.exit(1);
+}
 
 // Validate requested account count
 if (
@@ -187,8 +195,14 @@ async function seedUsers() {
   console.log("Role: CLIENT");
   console.log("Accounts active: YES");
 
+  // Stable copy that every k6 script and runner uses by default
+  const LATEST_FILE = path.join(OUTPUT_DIR, "bookify-users-latest.csv");
+  fs.copyFileSync(OUTPUT_FILE, LATEST_FILE);
+
   console.log("\nCredentials saved to:");
   console.log(OUTPUT_FILE);
+  console.log("Also copied to (default file for k6):");
+  console.log(LATEST_FILE);
 
   console.log("\nTest batch ID:");
   console.log(RUN_ID);

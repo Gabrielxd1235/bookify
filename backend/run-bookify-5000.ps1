@@ -54,18 +54,12 @@ if (-not (Test-Path (Join-Path $loadDir $script))) {
   Stop-WithMessage "No se encontro tests\load\$script" "Actualiza el repositorio con: git pull"
 }
 
-# 3. Account files: the consolidated file if it was prepared, otherwise the two seeder files
-$consolidated = Join-Path $privateDir "bookify-5000-consolidated.csv"
-if (Test-Path $consolidated) {
-  $files = @($consolidated)
-} else {
-  $files = @(
-    (Join-Path $privateDir "bookify-users-mwinc5qd566ff647.csv"),
-    (Join-Path $privateDir "bookify-users-mwinewgu4f2daf9a.csv")
-  ) | Where-Object { Test-Path $_ }
-}
+# 3. Account file: the latest seeder run (bookify-users-latest.csv). Older CSVs
+#    may list accounts already removed by sql\cleanup-load-test-users.sql.
+$latest = Join-Path $privateDir "bookify-users-latest.csv"
+$files = @($latest) | Where-Object { Test-Path $_ }
 if (-not $files -or $files.Count -eq 0) {
-  Stop-WithMessage "No hay archivos de cuentas en $privateDir" "Copia ahi bookify-users-mwinc5qd566ff647.csv y bookify-users-mwinewgu4f2daf9a.csv (no estan en GitHub porque contienen contrasenas)."
+  Stop-WithMessage "No hay cuentas de prueba en $latest" "Crealas desde backend con: node scripts\seed-load-users.cjs 5000 --rounds 4"
 }
 $accountCount = ($files | ForEach-Object { @(Import-Csv $_).Count } | Measure-Object -Sum).Sum
 if ($accountCount -lt $TotalUsers) {

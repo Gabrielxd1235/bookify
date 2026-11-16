@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const supabase = require("../config/supabase");
+const { isLoadTestRequest } = require("../middlewares/loadTest.middleware");
 
 const {
   REFRESH_TOKEN_MS,
@@ -60,8 +61,17 @@ const register = async (req, res) => {
       });
     }
 
-    // Hash the password
-    const passwordHash = await bcrypt.hash(password, 12);
+    // Hash the password. Synthetic load-test accounts (authorized key +
+    // reserved .test domain) use a low cost so 5000 registrations finish in
+    // minutes; every real account keeps cost 12.
+    const isLoadTestAccount =
+      isLoadTestRequest(req) &&
+      /^loadtest-[a-z0-9-]+@example\.test$/.test(normalizedEmail);
+
+    const passwordHash = await bcrypt.hash(
+      password,
+      isLoadTestAccount ? 4 : 12
+    );
 
     // Register the user with the CLIENT role
     const { data, error } = await supabase

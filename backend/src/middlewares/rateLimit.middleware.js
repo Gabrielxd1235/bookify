@@ -28,6 +28,9 @@ const registerLimiter = rateLimit({
   standardHeaders: "draft-8",
   legacyHeaders: false,
 
+  // Authorized load tests (X-Load-Test-Key) are not limited
+  skip: isLoadTestRequest,
+
   message: {
     success: false,
     message: "Too many registrations. Please try again later."

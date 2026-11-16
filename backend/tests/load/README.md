@@ -119,3 +119,21 @@ Azure por cuenta). Cada cuenta sigue haciendo login real, perfil y logout:
    `powershell -ExecutionPolicy Bypass -File .\run-bookify-5000.ps1 -TotalUsers 5000 -VirtualUsers 50 -LoadTestKey <clave>`
 4. Al terminar: quitar `LOAD_TEST_KEY` de Azure y, si se quiere, restaurar el costo:
    `node scripts/fast-hash-load-users.cjs --rounds 12`
+
+## 8. Registro de 5000 cuentas nuevas (`bookify-register-users.js`)
+
+Cada iteración registra una cuenta nueva por la API (`POST /api/auth/register`),
+inicia sesión con ella y comprueba que `/api/auth/me` devuelve esa misma cuenta.
+Los emails son `loadtest-reg<run>-NNNNN@example.test`.
+
+Con la clave de prueba de carga, el backend se salta el límite de 5 registros por hora
+y cifra estas cuentas sintéticas con bcrypt de costo 4 (las reales siguen con 12):
+
+```
+k6 run --linger -e "BASE_URL=$api" -e ACCOUNT_COUNT=5000 -e VUS=50 -e "LOAD_TEST_KEY=$key" --summary-export results\vivo-registro-5000.json bookify-register-users.js
+```
+
+Para borrar todas las cuentas de prueba (seeder, registro y la prueba antigua
+`k6.bookify.*@example.com`) sin tocar administradores, dueños ni clientes reales,
+usar `backend/sql/cleanup-load-test-users.sql` en el SQL Editor de Supabase
+(primero el PASO 1 de vista previa, luego el PASO 2).

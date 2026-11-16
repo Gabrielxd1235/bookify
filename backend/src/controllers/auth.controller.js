@@ -422,8 +422,113 @@ const getProfile = (req, res) => {
   });
 };
 
+// POST /api/auth/register-batch  (load tests only)
+// Registers up to 50 synthetic accounts in one request and one database
+// insert. Hidden (404) unless the request carries the load-test key, and it
+// only accepts reserved loadtest-*@example.test emails, always as CLIENT.
+// Every account is validated like a normal registration and gets its own
+// bcrypt hash (cost 4, as other load-test accounts).
+const BATCH_MAX = 50;
+const LOAD_TEST_EMAIL = /^loadtest-[a-z0-9-]+@example\.test$/;
+
+const registerBatch = async (req, res) => {
+  if (!isLoadTestRequest(req)) {
+    return res.status(404).json({
+      success: false,
+      message: "Route not found"
+    });
+  }
+
+  try {
+    const users = req.body?.users;
+
+    if (!Array.isArray(users) || users.length < 1 || users.length > BATCH_MAX) {
+      return res.status(400).json({
+        success: false,
+        message: `users must be an array of 1 to ${BATCH_MAX} accounts`
+      });
+    }
+
+    const rows = [];
+
+    for (const [index, user] of users.entries()) {
+      const { full_name, email, password } = user || {};
+
+      const name = typeof full_name === "string" ? full_name.trim() : "";
+      const normalizedEmail =
+        typeof email === "string" ? email.trim().toLowerCase() : "";
+
+      const valid =
+        name.length >= 3 &&
+        name.length <= 100 &&
+        LOAD_TEST_EMAIL.test(normalizedEmail) &&
+        typeof password === "string" &&
+        password.length >= 8 &&
+        Buffer.byteLength(password, "utf8") <= 72;
+
+      if (!valid) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid account at position ${index}`
+        });
+      }
+
+      rows.push({ name, normalizedEmail, password });
+    }
+
+    // One bcrypt hash per account (runs in the libuv thread pool)
+    const hashes = await Promise.all(
+      rows.map((row) => bcrypt.hash(row.password, 4))
+    );
+
+    const { data, error } = await supabase
+      .from("users")
+      .insert(
+        rows.map((row, i) => ({
+          full_name: row.name,
+          email: row.normalizedEmail,
+          password_hash: hashes[i],
+          role: "CLIENT",
+          is_active: true
+        }))
+      )
+      .select("id");
+
+    if (error) {
+      if (error.code === "23505") {
+        return res.status(409).json({
+          success: false,
+          message: "An email in the batch is already registered"
+        });
+      }
+
+      console.error("Batch registration error:", error.message);
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to register the batch"
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Batch registered successfully",
+      created: data.length
+    });
+
+  } catch (error) {
+    console.error("Batch registration error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
 module.exports = {
   register,
+  registerBatch,
   login,
   refresh,
   logout,

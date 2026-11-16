@@ -2,6 +2,7 @@ const express = require("express");
 
 const {
   register,
+  registerBatch,
   login,
   refresh,
   logout,
@@ -44,6 +45,9 @@ function checkAuthOrigin(req, res, next) {
 
 // Register a new client
 router.post("/register", registerLimiter, register);
+
+// Load tests only: batch registration (404 without the load-test key)
+router.post("/register-batch", registerBatch);
 
 // Authenticate a user
 router.post("/login", loginLimiter, login);

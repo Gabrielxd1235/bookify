@@ -13,6 +13,9 @@
     # Cuantas cuentas se registran en 2 segundos
     powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2
 
+    # Registro por lotes de 50 cuentas por peticion (lo mas rapido)
+    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2 -BatchSize 50
+
     # Registro + login + perfil de cada cuenta (mas lento, prueba que cada cuenta funciona)
     powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Full -VirtualUsers 50
 #>
@@ -30,6 +33,10 @@ param(
   # Ademas del registro, hace login y lee el perfil de cada cuenta
   [switch]$Full,
 
+  # 0 = una cuenta por peticion. 1-50 = registro por lotes (/api/auth/register-batch)
+  [ValidateRange(0, 50)]
+  [int]$BatchSize = 0,
+
   [string]$LoadTestKey = $env:LOAD_TEST_KEY,
 
   [string]$BaseUrl = "https://bookify-api.orangesky-480d5b34.mexicocentral.azurecontainerapps.io"
@@ -39,7 +46,10 @@ $ErrorActionPreference = "Stop"
 $BaseUrl = $BaseUrl.TrimEnd("/")
 $loadDir = Join-Path $PSScriptRoot "tests\load"
 $resultsDir = Join-Path $loadDir "results"
-$script = "bookify-register-users.js"
+$script = if ($BatchSize -gt 0) { "bookify-register-batch.js" } else { "bookify-register-users.js" }
+# Batches carry 50 accounts each, so far fewer simultaneous users are needed
+if ($BatchSize -gt 0 -and -not $PSBoundParameters.ContainsKey("VirtualUsers")) { $VirtualUsers = 20 }
+if ($BatchSize -gt 0 -and $Full) { Write-Host "Aviso: -Full no aplica al registro por lotes; se ignora." -ForegroundColor Yellow; $Full = $false }
 
 function Stop-WithMessage([string]$message, [string]$hint) {
   Write-Host ""
@@ -64,6 +74,7 @@ if (-not (Test-Path (Join-Path $PSScriptRoot ".env"))) {
 
 # The key decides whether the API rate limit lets the test through
 if (-not $LoadTestKey) {
+  if ($BatchSize -gt 0) { Stop-WithMessage "El registro por lotes necesita -LoadTestKey." "" }
   Write-Host "Aviso: sin -LoadTestKey el backend solo permite 5 registros por hora." -ForegroundColor Yellow
 } else {
   $headers = (& curl.exe -s -D - -o NUL -H "X-Load-Test-Key: $LoadTestKey" "$BaseUrl/api/health") -join "`n"
@@ -86,7 +97,7 @@ $name = "registro-$Accounts-$stamp"
 $dashboard = Join-Path $resultsDir "$name-dashboard.html"
 $summary = Join-Path $resultsDir "$name-summary.json"
 
-$mode = if ($Full) { "registro + login + perfil" } else { "solo registro" }
+$mode = if ($BatchSize -gt 0) { "lotes de $BatchSize" } elseif ($Full) { "registro + login + perfil" } else { "solo registro" }
 $limit = if ($Seconds -gt 0) { "$Seconds s" } else { "sin limite" }
 Write-Host ""
 Write-Host "Cuentas: $Accounts   Usuarios simultaneos: $VirtualUsers   Modo: $mode   Tiempo: $limit"
@@ -102,7 +113,8 @@ $k6Args = @(
   "-e", "RUN_ID=$runId",
   "-e", "LOAD_TEST_KEY=$LoadTestKey"
 )
-if (-not $Full) { $k6Args += @("-e", "REGISTER_ONLY=1") }
+if ($BatchSize -gt 0) { $k6Args += @("-e", "BATCH_SIZE=$BatchSize") }
+elseif (-not $Full) { $k6Args += @("-e", "REGISTER_ONLY=1") }
 if ($Seconds -gt 0) {
   $k6Args += @("-e", "MAX_DURATION=$($Seconds)s", "-e", "GRACEFUL_STOP=0s")
 }

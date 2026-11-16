@@ -159,3 +159,13 @@ powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey
 powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2  # cuántas en 2 s
 powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Full -VirtualUsers 50     # + login y perfil
 ```
+
+### Registro por lotes (`bookify-register-batch.js`)
+
+`POST /api/auth/register-batch` registra hasta 50 cuentas por petición con un solo insert.
+Solo existe con la clave de prueba (sin ella responde 404) y solo acepta emails
+`loadtest-*@example.test` como CLIENT. Cada cuenta se valida y recibe su propio hash.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2 -BatchSize 50
+```

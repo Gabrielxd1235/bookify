@@ -103,59 +103,16 @@ const getCategories = async (req, res) => {
   }
 
   try {
-    // Retrieve the total number of categories
-    const {
-      count: total,
-      error: countError
-    } = await supabase
-      .from("categories")
-      .select("id", {
-        count: "exact",
-        head: true
-      });
-
-    // Handle database counting errors
-    if (countError) {
-      console.error(
-        "Category count error:",
-        countError.code,
-        countError.message
-      );
-
-      return res.status(500).json({
-        success: false,
-        message: "Unable to retrieve categories"
-      });
-    }
-
-    const totalCategories = total ?? 0;
-
-    const totalPages = Math.ceil(
-      totalCategories / limit
-    );
-
-    // Return an empty page if the requested range
-    // starts beyond the available records
-    if (start >= totalCategories) {
-      return res.status(200).json({
-        success: true,
-        total: totalCategories,
-        categories: [],
-        pagination: {
-          page,
-          limit,
-          totalPages
-        }
-      });
-    }
-
-    // Retrieve the requested category page
+    // Retrieve the requested page and the total count in one round trip
     const {
       data,
+      count: total,
       error
     } = await supabase
       .from("categories")
-      .select(CATEGORY_FIELDS)
+      .select(CATEGORY_FIELDS, {
+        count: "exact"
+      })
       .order("name", {
         ascending: true
       })
@@ -165,8 +122,8 @@ const getCategories = async (req, res) => {
       .range(start, end);
 
     if (error) {
-      // Handle records changing between the count
-      // query and the paginated query
+      // The requested range starts beyond the available
+      // records: return an empty page with the real total
       if (error.code === "PGRST103") {
         const {
           count: updatedTotal,
@@ -219,6 +176,12 @@ const getCategories = async (req, res) => {
         message: "Unable to retrieve categories"
       });
     }
+
+    const totalCategories = total ?? 0;
+
+    const totalPages = Math.ceil(
+      totalCategories / limit
+    );
 
     // Return categories with pagination metadata
     return res.status(200).json({

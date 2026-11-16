@@ -9,7 +9,8 @@ const accounts = new SharedArray(
   "bookify-token-test-account",
   () => {
     const lines = open(
-      "./private/bookify-users-mw91jbaabc152991.csv"
+      __ENV.USERS_FILE ||
+        "./private/bookify-users-mw91jbaabc152991.csv"
     )
       .trim()
       .split(/\r?\n/)

@@ -12,7 +12,7 @@ const TOTAL_REQUESTS =
   Number(__ENV.TOTAL_REQUESTS || 50);
 
 const VIRTUAL_USERS =
-  Number(__ENV.VIRTUAL_USERS || 5);
+  Number(__ENV.VIRTUAL_USERS || 50);
 
 // Load registered accounts from the private CSV
 const accounts = new SharedArray(
@@ -67,9 +67,10 @@ const apiRequests = new Counter(
   "bookify_api_requests"
 );
 
-// Authentication is preserved per virtual user
-let accessToken = null;
-
+// Logins run in setup() in small batches so the login rate limiter
+// (10 concurrent attempts per IP) is never tripped, and bcrypt runs only
+// once per session instead of once per iteration.
+const LOGIN_BATCH_SIZE = Number(__ENV.LOGIN_BATCH_SIZE || 5);
 // Public and protected endpoints
 const endpoints = [
   "/api/auth/me",
@@ -104,63 +105,53 @@ export const options = {
   }
 };
 
-export default function () {
-  let accessToken = null;
-  // Assign a real registered test account to each VU
-  const accountIndex = exec.scenario.iterationInTest;
+export function setup() {
+  const sessionCount = Math.min(VIRTUAL_USERS, accounts.length);
+  const tokens = [];
 
-  const account = accounts[accountIndex];
+  for (let start = 0; start < sessionCount; start += LOGIN_BATCH_SIZE) {
+    const batch = [];
 
-  // Authenticate once for each virtual user
-  if (!accessToken) {
-    const loginResponse = http.post(
-      `${BASE_URL}/api/auth/login`,
-      JSON.stringify({
-        email: account.email,
-        password: account.password
-      }),
-      {
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        tags: {
-          test_type: "login",
-          operation: "authentication"
-        },
-
-        timeout: "15s"
-      }
-    );
-
-    const loginPassed = check(loginResponse, {
-      "Login HTTP 200": (response) =>
-        response.status === 200
-    });
-
-    if (!loginPassed) {
-      console.error(
-        `Authentication failed: HTTP ${loginResponse.status}`
-      );
-
-      return;
+    for (let i = start; i < Math.min(start + LOGIN_BATCH_SIZE, sessionCount); i++) {
+      batch.push({
+        method: "POST",
+        url: `${BASE_URL}/api/auth/login`,
+        body: JSON.stringify({
+          email: accounts[i].email,
+          password: accounts[i].password
+        }),
+        params: {
+          headers: { "Content-Type": "application/json" },
+          tags: { test_type: "login", operation: "authentication" },
+          timeout: "15s"
+        }
+      });
     }
 
-    try {
-      const loginData = loginResponse.json();
+    for (const response of http.batch(batch)) {
+      const loginPassed = check(response, {
+        "Login HTTP 200": (r) => r.status === 200
+      });
 
-      accessToken = loginData.accessToken;
+      const token = loginPassed ? response.json("accessToken") : null;
 
-      if (!accessToken) {
-        console.error("Access token missing");
-        return;
+      if (!token) {
+        exec.test.abort(
+          `Authentication failed: HTTP ${response.status}. Aborting instead of running unauthenticated iterations.`
+        );
       }
 
-    } catch {
-      console.error("Invalid login response");
-      return;
+      tokens.push(token);
     }
   }
+
+  return { tokens };
+}
+
+export default function (data) {
+  // Each VU reuses the token obtained for it in setup()
+  const accessToken =
+    data.tokens[(exec.vu.idInTest - 1) % data.tokens.length];
 
   // Select the endpoint for this iteration
   const iteration =

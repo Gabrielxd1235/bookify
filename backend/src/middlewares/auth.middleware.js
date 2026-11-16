@@ -1,6 +1,7 @@
 
 const jwt = require("jsonwebtoken");
 const supabase = require("../config/supabase");
+const { getCachedUser } = require("../config/userCache");
 
 // Verify user authentication
 const verifyToken = async (req, res, next) => {
@@ -50,11 +51,15 @@ const verifyToken = async (req, res, next) => {
     }
 
     // 4. Check that the user still exists
-    const { data: user, error } = await supabase
-      .from("users")
-      .select("id, full_name, email, role, is_active")
-      .eq("id", decoded.sub)
-      .maybeSingle();
+    const { data: user, error } = await getCachedUser(
+      decoded.sub,
+      () =>
+        supabase
+          .from("users")
+          .select("id, full_name, email, role, is_active")
+          .eq("id", decoded.sub)
+          .maybeSingle()
+    );
 
     if (error) {
       console.error("Error verifying user:", error.message);

@@ -1,4 +1,5 @@
 const supabase = require("../config/supabase");
+const { clearUserCache } = require("../config/userCache");
 const { isPositiveId, respondDbError, publicImageUrl } = require("../utils/extension.utils");
 const { BUSINESS_BUCKET } = require("../utils/image-storage.utils");
 
@@ -58,6 +59,8 @@ async function reviewApplication(req, res) {
     p_decision: decision,
     p_admin_note: admin_note?.trim() || null
   });
+  // Approval promotes the applicant to BUSINESS_OWNER
+  clearUserCache();
   if (error) return respondDbError(res, error, "Unable to review application");
   return res.json({ success: true, message: "Application reviewed", result: data });
 }

@@ -11,10 +11,13 @@ const BASE_URL =
 const accounts = new SharedArray(
   "bookify-registered-test-accounts",
   function () {
-    const files = [
-      "./private/bookify-users-mw91fx6zbda2ca64.csv",
-      "./private/bookify-users-mw91jbaabc152991.csv"
-    ];
+    // USERS_FILES: comma-separated list of CSV paths
+    const files = __ENV.USERS_FILES
+      ? __ENV.USERS_FILES.split(",")
+      : [
+          "./private/bookify-users-mw91fx6zbda2ca64.csv",
+          "./private/bookify-users-mw91jbaabc152991.csv"
+        ];
 
     const allAccounts = [];
 
@@ -51,6 +54,9 @@ const accounts = new SharedArray(
   }
 );
 
+// First account to verify (lets a long run be resumed or split)
+const START_INDEX = Number(__ENV.START_INDEX || 0);
+
 // Number of accounts to verify
 const ACCOUNT_COUNT = Number(
   __ENV.ACCOUNT_COUNT || 10
@@ -60,7 +66,7 @@ const ACCOUNT_COUNT = Number(
 if (
   !Number.isInteger(ACCOUNT_COUNT) ||
   ACCOUNT_COUNT < 1 ||
-  ACCOUNT_COUNT > accounts.length
+  START_INDEX + ACCOUNT_COUNT > accounts.length
 ) {
   throw new Error(
     `ACCOUNT_COUNT must be between 1 and ${accounts.length}`
@@ -72,9 +78,10 @@ export const options = {
   scenarios: {
     authentication_verification: {
       executor: "shared-iterations",
-      vus: 5,
+      // Keep below 10: the login limiter allows 10 in-flight attempts per IP
+      vus: Number(__ENV.VUS || 5),
       iterations: ACCOUNT_COUNT,
-      maxDuration: "10m"
+      maxDuration: __ENV.MAX_DURATION || "10m"
     }
   },
 
@@ -86,7 +93,7 @@ export const options = {
 
 // Execute one verification per registered account
 export default function () {
-  const index = exec.scenario.iterationInTest;
+  const index = START_INDEX + exec.scenario.iterationInTest;
 
   const account = accounts[index];
 

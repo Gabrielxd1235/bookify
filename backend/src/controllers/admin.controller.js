@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const supabase = require("../config/supabase");
+const { clearUserCache } = require("../config/userCache");
 
 const {
   attachReservationDetails
@@ -404,6 +405,9 @@ async function updateUserRole(req, res) {
       .select(USER_FIELDS)
       .maybeSingle();
 
+    // Role, status or identity may have changed
+    clearUserCache();
+
     if (error) {
       return sendDatabaseError(res, error);
     }
@@ -513,6 +517,9 @@ async function updateUserStatus(req, res) {
       .eq("is_active", user.is_active)
       .select(USER_FIELDS)
       .maybeSingle();
+
+    // Role, status or identity may have changed
+    clearUserCache();
 
     if (error) {
       return sendDatabaseError(res, error);
@@ -695,6 +702,9 @@ async function updateUserDetails(req, res) {
       .neq("role", "ADMIN")
       .select(USER_FIELDS)
       .maybeSingle();
+
+    // Role, status or identity may have changed
+    clearUserCache();
 
     if (error) {
       if (error.code === "23505") {

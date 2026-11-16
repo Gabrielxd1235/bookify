@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const supabase = require("../config/supabase");
+const { clearUserCache } = require("../config/userCache");
 const { isNonEmptyString, publicImageUrl, respondDbError } = require("../utils/extension.utils");
 const { AVATAR_BUCKET, uploadFile, removeFile } = require("../utils/image-storage.utils");
 
@@ -48,6 +49,7 @@ async function updateMe(req, res) {
   }
   const { data, error } = await supabase.from("users").update(changes)
     .eq("id", req.user.id).select(FIELDS).maybeSingle();
+  clearUserCache();
   if (error) return respondDbError(res, error, "Unable to update profile");
   return res.json({ success: true, message: "Profile updated", user: serializeProfile(data) });
 }

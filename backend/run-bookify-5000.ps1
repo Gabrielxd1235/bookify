@@ -91,28 +91,36 @@ Write-Host "No inicies sesion en BOOKIFY desde esta red mientras corre la prueba
 Write-Host ""
 
 $relativeFiles = ($files | ForEach-Object { "./private/" + (Split-Path $_ -Leaf) }) -join ","
+# Export-only dashboard (port -1 = no live server). Save the caller's values and
+# restore them in `finally`, so a Ctrl+C never leaves port -1 in the session.
+$dashVars = "K6_WEB_DASHBOARD", "K6_WEB_DASHBOARD_PORT", "K6_WEB_DASHBOARD_EXPORT"
+$savedDash = @{}
+foreach ($v in $dashVars) { $savedDash[$v] = [Environment]::GetEnvironmentVariable($v, "Process") }
 $env:K6_WEB_DASHBOARD = "true"
 $env:K6_WEB_DASHBOARD_PORT = "-1"
 $env:K6_WEB_DASHBOARD_EXPORT = $dashboard
 $startedAt = Get-Date
+$exitCode = 1
 
 # k6 must run from tests\load because the script reads ./private/...
 Push-Location $loadDir
-$ErrorActionPreference = "Continue"
-& k6 run `
-  -e "BASE_URL=$BaseUrl" `
-  -e "USERS_FILES=$relativeFiles" `
-  -e "ACCOUNT_COUNT=$TotalUsers" `
-  -e "VUS=$VirtualUsers" `
-  -e "MAX_DURATION=$($maxMinutes)m" `
-  -e "LOGIN_TIMEOUT=30s" `
-  --summary-export $summary `
-  $script
-$exitCode = $LASTEXITCODE
-$ErrorActionPreference = "Stop"
-Pop-Location
-
-Remove-Item Env:\K6_WEB_DASHBOARD, Env:\K6_WEB_DASHBOARD_PORT, Env:\K6_WEB_DASHBOARD_EXPORT -ErrorAction SilentlyContinue
+try {
+  $ErrorActionPreference = "Continue"
+  & k6 run `
+    -e "BASE_URL=$BaseUrl" `
+    -e "USERS_FILES=$relativeFiles" `
+    -e "ACCOUNT_COUNT=$TotalUsers" `
+    -e "VUS=$VirtualUsers" `
+    -e "MAX_DURATION=$($maxMinutes)m" `
+    -e "LOGIN_TIMEOUT=30s" `
+    --summary-export $summary `
+    $script
+  $exitCode = $LASTEXITCODE
+} finally {
+  $ErrorActionPreference = "Stop"
+  Pop-Location
+  foreach ($v in $dashVars) { [Environment]::SetEnvironmentVariable($v, $savedDash[$v], "Process") }
+}
 
 # 6. Short report for the evidence record
 Write-Host ""

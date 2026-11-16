@@ -8,13 +8,18 @@
   Uso (desde la carpeta backend):
     powershell -ExecutionPolicy Bypass -File .\run-bookify-5000.ps1 -TotalUsers 20 -VirtualUsers 1
     powershell -ExecutionPolicy Bypass -File .\run-bookify-5000.ps1 -TotalUsers 5000 -VirtualUsers 3
+    Rapido (tras node scripts\fast-hash-load-users.cjs y LOAD_TEST_KEY en el servidor):
+    powershell -ExecutionPolicy Bypass -File .\run-bookify-5000.ps1 -TotalUsers 5000 -VirtualUsers 50 -LoadTestKey <clave>
 #>
 param(
   [ValidateRange(1, 6000)]
   [int]$TotalUsers = 20,
 
-  [ValidateRange(1, 9)]
+  [ValidateRange(1, 200)]
   [int]$VirtualUsers = 1,
+
+  # Same value as LOAD_TEST_KEY on the server: skips the rate limiters
+  [string]$LoadTestKey = $env:LOAD_TEST_KEY,
 
   [string]$BaseUrl = "https://bookify-api.orangesky-480d5b34.mexicocentral.azurecontainerapps.io"
 )
@@ -83,21 +88,27 @@ $name = "cuentas-$TotalUsers-$stamp"
 $dashboard = Join-Path $resultsDir "$name-dashboard.html"
 $summary = Join-Path $resultsDir "$name-summary.json"
 
-# About 2 accounts per second per virtual user against Azure, plus margin
-$maxMinutes = [math]::Max(5, [math]::Ceiling($TotalUsers / ($VirtualUsers * 1.5) / 60 * 1.5))
+# Generous upper bound; with fast hashes 5000 accounts take a few minutes
+$maxMinutes = [math]::Max(10, [math]::Ceiling($TotalUsers / ($VirtualUsers * 1.5) / 60 * 1.5))
+if ($VirtualUsers -ge 10 -and -not $LoadTestKey) {
+  Write-Host "Aviso: sin -LoadTestKey el limitador de login puede bloquear con 10+ usuarios." -ForegroundColor Yellow
+}
 Write-Host ""
 Write-Host "Cuentas: $TotalUsers   Usuarios simultaneos: $VirtualUsers   Tiempo maximo: $maxMinutes min"
 Write-Host "No inicies sesion en BOOKIFY desde esta red mientras corre la prueba."
+Write-Host "Dashboard en vivo: http://127.0.0.1:5665"
 Write-Host ""
 
 $relativeFiles = ($files | ForEach-Object { "./private/" + (Split-Path $_ -Leaf) }) -join ","
-# Export-only dashboard (port -1 = no live server). Save the caller's values and
-# restore them in `finally`, so a Ctrl+C never leaves port -1 in the session.
-$dashVars = "K6_WEB_DASHBOARD", "K6_WEB_DASHBOARD_PORT", "K6_WEB_DASHBOARD_EXPORT"
+# Live dashboard at http://127.0.0.1:5665 (opens the browser) plus HTML export at the end.
+# Save the caller's values and restore them in `finally`, so a Ctrl+C never leaves
+# these variables changed in the session.
+$dashVars = "K6_WEB_DASHBOARD", "K6_WEB_DASHBOARD_PORT", "K6_WEB_DASHBOARD_OPEN", "K6_WEB_DASHBOARD_EXPORT"
 $savedDash = @{}
 foreach ($v in $dashVars) { $savedDash[$v] = [Environment]::GetEnvironmentVariable($v, "Process") }
 $env:K6_WEB_DASHBOARD = "true"
-$env:K6_WEB_DASHBOARD_PORT = "-1"
+$env:K6_WEB_DASHBOARD_PORT = "5665"
+$env:K6_WEB_DASHBOARD_OPEN = "true"
 $env:K6_WEB_DASHBOARD_EXPORT = $dashboard
 $startedAt = Get-Date
 $exitCode = 1
@@ -113,6 +124,7 @@ try {
     -e "VUS=$VirtualUsers" `
     -e "MAX_DURATION=$($maxMinutes)m" `
     -e "LOGIN_TIMEOUT=30s" `
+    -e "LOAD_TEST_KEY=$LoadTestKey" `
     --summary-export $summary `
     $script
   $exitCode = $LASTEXITCODE

@@ -1,5 +1,6 @@
 
 const { rateLimit } = require("express-rate-limit");
+const { isLoadTestRequest } = require("./loadTest.middleware");
 
 // Limit login attempts: 10 failed attempts lock the client for 3 minutes
 const loginLimiter = rateLimit({
@@ -10,6 +11,9 @@ const loginLimiter = rateLimit({
 
   // Count only unsuccessful requests
   skipSuccessfulRequests: true,
+
+  // Authorized load tests (LOAD_TEST_KEY) are not limited
+  skip: isLoadTestRequest,
 
   message: {
     success: false,

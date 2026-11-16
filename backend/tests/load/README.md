@@ -103,3 +103,19 @@ servidor. Repetido con 60 cuentas, pasó al 100 %.
 | Logins con `HTTP 0` contra Azure | Añadir `-e LOGIN_TIMEOUT=30s` |
 | `API failure ... HTTP 429` | Límite global de 20 000 peticiones en 15 min: esperar |
 | "La ejecución de scripts está deshabilitada" | Usar `powershell -ExecutionPolicy Bypass -File ...` |
+
+## 7. Modo rápido para 5000 cuentas reales (~2–4 min en vez de ~45 min)
+
+La lentitud venía de `bcrypt.compare` con costo 12 en cada login (~0.5 s de CPU en
+Azure por cuenta). Cada cuenta sigue haciendo login real, perfil y logout:
+
+1. Bajar el costo del hash **solo** de las cuentas `loadtest-*@example.test`
+   (misma contraseña, no toca usuarios reales):
+   `node scripts/fast-hash-load-users.cjs`
+2. En Azure, definir la variable de entorno `LOAD_TEST_KEY` (32+ caracteres aleatorios)
+   y desplegar. Las peticiones con la cabecera `X-Load-Test-Key` igual a esa clave
+   se saltan el limitador de login y el limitador general. Sin la variable no hay bypass.
+3. Ejecutar con muchos usuarios virtuales:
+   `powershell -ExecutionPolicy Bypass -File .\run-bookify-5000.ps1 -TotalUsers 5000 -VirtualUsers 50 -LoadTestKey <clave>`
+4. Al terminar: quitar `LOAD_TEST_KEY` de Azure y, si se quiere, restaurar el costo:
+   `node scripts/fast-hash-load-users.cjs --rounds 12`

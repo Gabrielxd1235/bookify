@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
+const { isLoadTestRequest } = require("./middlewares/loadTest.middleware");
 const path = require("node:path");
 
 // Database connection
@@ -132,8 +133,9 @@ const apiLimiter = rateLimit({
   // Skip limits only for local load testing
   skip: (req) => {
     return (
-      process.env.NODE_ENV === "loadtest" &&
-      isLocalRequest(req)
+      isLoadTestRequest(req) ||
+      (process.env.NODE_ENV === "loadtest" &&
+        isLocalRequest(req))
     );
   },
 

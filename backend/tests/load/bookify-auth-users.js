@@ -54,6 +54,11 @@ const accounts = new SharedArray(
   }
 );
 
+// Optional header that skips the server rate limiters (server needs LOAD_TEST_KEY)
+const LOAD_TEST_HEADERS = __ENV.LOAD_TEST_KEY
+  ? { "X-Load-Test-Key": __ENV.LOAD_TEST_KEY }
+  : {};
+
 // First account to verify (lets a long run be resumed or split)
 const START_INDEX = Number(__ENV.START_INDEX || 0);
 
@@ -78,7 +83,7 @@ export const options = {
   scenarios: {
     authentication_verification: {
       executor: "shared-iterations",
-      // Keep below 10: the login limiter allows 10 in-flight attempts per IP
+      // With LOAD_TEST_KEY the login limiter is skipped, so 50+ VUs are fine
       vus: Number(__ENV.VUS || 5),
       iterations: ACCOUNT_COUNT,
       maxDuration: __ENV.MAX_DURATION || "10m"
@@ -112,7 +117,8 @@ export default function () {
     }),
     {
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        ...LOAD_TEST_HEADERS
       },
 
       tags: {
@@ -163,7 +169,8 @@ export default function () {
     `${BASE_URL}/api/auth/me`,
     {
       headers: {
-        Authorization: `Bearer ${accessToken}`
+        Authorization: `Bearer ${accessToken}`,
+        ...LOAD_TEST_HEADERS
       },
 
       tags: {
@@ -200,6 +207,8 @@ export default function () {
     `${BASE_URL}/api/auth/logout`,
     null,
     {
+      headers: LOAD_TEST_HEADERS,
+
       tags: {
         operation: "logout"
       },
@@ -213,5 +222,7 @@ export default function () {
       r.status === 200
   });
 
-  sleep(0.1);
+  if (__ENV.THINK_TIME) {
+    sleep(Number(__ENV.THINK_TIME));
+  }
 }

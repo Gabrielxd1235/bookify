@@ -15,8 +15,8 @@ const accounts = new SharedArray(
     const files = __ENV.USERS_FILES
       ? __ENV.USERS_FILES.split(",")
       : [
-          "./private/bookify-users-mw91fx6zbda2ca64.csv",
-          "./private/bookify-users-mw91jbaabc152991.csv"
+          "./private/bookify-users-mwinc5qd566ff647.csv",
+          "./private/bookify-users-mwinewgu4f2daf9a.csv"
         ];
 
     const allAccounts = [];
@@ -119,7 +119,8 @@ export default function () {
         operation: "login"
       },
 
-      timeout: "5s"
+      // Azure needs more than 5 s per login under load (bcrypt on 0.5 vCPU)
+      timeout: __ENV.LOGIN_TIMEOUT || "5s"
     }
   );
 

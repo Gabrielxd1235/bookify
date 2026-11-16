@@ -10,7 +10,7 @@ const accounts = new SharedArray(
   () => {
     const lines = open(
       __ENV.USERS_FILE ||
-        "./private/bookify-users-mw91jbaabc152991.csv"
+        "./private/bookify-users-mwinewgu4f2daf9a.csv"
     )
       .trim()
       .split(/\r?\n/)

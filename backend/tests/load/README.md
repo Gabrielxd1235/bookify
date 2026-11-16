@@ -137,3 +137,8 @@ Para borrar todas las cuentas de prueba (seeder, registro y la prueba antigua
 `k6.bookify.*@example.com`) sin tocar administradores, dueños ni clientes reales,
 usar `backend/sql/cleanup-load-test-users.sql` en el SQL Editor de Supabase
 (primero el PASO 1 de vista previa, luego el PASO 2).
+
+Prueba con límite de tiempo (cuántas cuentas quedan registradas en N segundos):
+`-e MAX_DURATION=2s -e GRACEFUL_STOP=0s`. El conteo real se mira en Supabase con el
+`Run id` que imprime k6, porque las peticiones que estaban en curso al cortar también
+quedan guardadas.

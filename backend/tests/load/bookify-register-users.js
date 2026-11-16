@@ -18,6 +18,7 @@ import exec from "k6/execution";
 const BASE_URL = __ENV.BASE_URL || "http://localhost:3000";
 const ACCOUNT_COUNT = Number(__ENV.ACCOUNT_COUNT || 10);
 const VUS = Number(__ENV.VUS || 5);
+// Per-request limit: a request slower than this counts as failed
 const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || "30s";
 
 if (!Number.isInteger(ACCOUNT_COUNT) || ACCOUNT_COUNT < 1 || ACCOUNT_COUNT > 10000) {
@@ -36,7 +37,12 @@ export const options = {
       executor: "shared-iterations",
       vus: VUS,
       iterations: ACCOUNT_COUNT,
-      maxDuration: __ENV.MAX_DURATION || "20m"
+      // Total time limit. With MAX_DURATION=2s the test stops after 2 seconds
+      // and the accounts registered so far stay in Supabase.
+      maxDuration: __ENV.MAX_DURATION || "20m",
+      // Extra time for in-flight iterations after maxDuration (k6 default 30s).
+      // GRACEFUL_STOP=0s cuts exactly at maxDuration.
+      gracefulStop: __ENV.GRACEFUL_STOP || "30s"
     }
   },
 

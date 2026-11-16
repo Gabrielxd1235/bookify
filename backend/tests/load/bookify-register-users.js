@@ -53,6 +53,36 @@ export const options = {
   }
 };
 
+// ---- Throughput options (how many accounts fit in a short MAX_DURATION) ----
+// REGISTER_ONLY=1: each VU only registers (skips login + profile), so every
+//   request in the time window creates an account. Persistence is checked by
+//   counting the run in Supabase instead.
+// WARMUP=1: before the timed window, every VU calls /api/health once to open
+//   its HTTPS connection to Azure, so the TLS handshake (~1 s on the first
+//   request) is not charged to the registration window.
+const REGISTER_ONLY = __ENV.REGISTER_ONLY === "1";
+const WARMUP = __ENV.WARMUP === "1";
+
+if (WARMUP) {
+  options.scenarios.warmup = {
+    executor: "per-vu-iterations",
+    exec: "warmup",
+    vus: VUS,
+    iterations: 1,
+    maxDuration: "20s",
+    gracefulStop: "0s"
+  };
+  // The registration window starts after the warm-up has finished
+  options.scenarios.registration.startTime = __ENV.WARMUP_TIME || "8s";
+}
+
+export function warmup() {
+  http.get(`${BASE_URL}/api/health`, {
+    tags: { operation: "warmup" },
+    timeout: "20s"
+  });
+}
+
 const CHARS =
   "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
 
@@ -122,6 +152,10 @@ export default function (data) {
   }
 
   registeredAccounts.add(1);
+
+  if (REGISTER_ONLY) {
+    return;
+  }
 
   // STEP 2: log in with the new credentials
   const loginResponse = http.post(

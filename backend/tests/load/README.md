@@ -142,3 +142,10 @@ Prueba con límite de tiempo (cuántas cuentas quedan registradas en N segundos)
 `-e MAX_DURATION=2s -e GRACEFUL_STOP=0s`. El conteo real se mira en Supabase con el
 `Run id` que imprime k6, porque las peticiones que estaban en curso al cortar también
 quedan guardadas.
+
+Más cuentas en una ventana corta: `-e REGISTER_ONLY=1` (solo registra, sin login ni
+perfil) y más usuarios virtuales. Medido contra Azure el 16/11/2026, ventana de 2 s:
+50 VU completo = 50 cuentas; 50 VU solo registro = 151; 200 VU = 290; 500 VU = 663
+(302 guardadas dentro de los primeros 2 s según `created_at`). El techo es la API
+(~150 registros/s con 0,5 vCPU y 1 réplica). `-e WARMUP=1` abre las conexiones antes
+de la ventana; no cambió el resultado.

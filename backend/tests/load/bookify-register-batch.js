@@ -15,7 +15,9 @@ import exec from "k6/execution";
 const BASE_URL = __ENV.BASE_URL || "http://localhost:3000";
 const ACCOUNT_COUNT = Number(__ENV.ACCOUNT_COUNT || 100);
 const BATCH_SIZE = Number(__ENV.BATCH_SIZE || 500);
-const VUS = Number(__ENV.VUS || 20);
+// Measured on Azure (0.5 vCPU): 5 VUs x 500 accounts = ~280 accounts/s with
+// 0 % failures; 10+ VUs saturate the API and batches start timing out.
+const VUS = Number(__ENV.VUS || 5);
 const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || "120s";
 
 if (!Number.isInteger(ACCOUNT_COUNT) || ACCOUNT_COUNT < 1 || ACCOUNT_COUNT > 500000) {

@@ -50,8 +50,9 @@ $BaseUrl = $BaseUrl.TrimEnd("/")
 $loadDir = Join-Path $PSScriptRoot "tests\load"
 $resultsDir = Join-Path $loadDir "results"
 $script = if ($BatchSize -gt 0) { "bookify-register-batch.js" } else { "bookify-register-users.js" }
-# Batches carry 50 accounts each, so far fewer simultaneous users are needed
-if ($BatchSize -gt 0 -and -not $PSBoundParameters.ContainsKey("VirtualUsers")) { $VirtualUsers = 20 }
+# Batches carry up to 500 accounts each: 5 simultaneous users is the stable
+# maximum measured on Azure (~280 accounts/s, 0 % failures)
+if ($BatchSize -gt 0 -and -not $PSBoundParameters.ContainsKey("VirtualUsers")) { $VirtualUsers = 5 }
 if ($BatchSize -gt 0 -and $Full) { Write-Host "Aviso: -Full no aplica al registro por lotes; se ignora." -ForegroundColor Yellow; $Full = $false }
 
 function Stop-WithMessage([string]$message, [string]$hint) {

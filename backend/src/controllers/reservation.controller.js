@@ -26,6 +26,8 @@ const RESERVATION_FIELDS = `
   balance_paid_via,
   status_reason,
   status_changed_by,
+  original_amount,
+  discount_percent,
   created_at,
   updated_at
 `;
@@ -643,6 +645,32 @@ async function cancelReservation(req, res) {
   }
 }
 
+// Welcome offer shown before booking (the database applies it on create)
+const FIRST_BOOKING_PERCENT = 25;
+
+// GET /api/reservations/offer
+async function getFirstBookingOffer(req, res) {
+  try {
+    const { data, error } = await supabase.rpc("bookify_first_booking_eligible", {
+      p_user_id: Number(req.user.id)
+    });
+
+    if (error) return handleDatabaseError(res, error, "Error checking the welcome offer");
+
+    return res.status(200).json({
+      success: true,
+      offer: {
+        eligible: data === true,
+        percent: FIRST_BOOKING_PERCENT,
+        label: `${FIRST_BOOKING_PERCENT}% off your first booking`
+      }
+    });
+  } catch (error) {
+    console.error("Welcome offer error:", error.message);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
 // PATCH /api/reservations/:id/manage   (business owner or admin)
 // body: { action: BALANCE_PAID_IN_STORE | COMPLETED | NO_SHOW | CANCEL, reason? }
 async function manageReservation(req, res) {
@@ -788,5 +816,6 @@ module.exports = {
   getReservationById,
   cancelReservation,
   manageReservation,
+  getFirstBookingOffer,
   getAvailableSlots
 };

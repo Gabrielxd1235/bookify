@@ -151,3 +151,18 @@
 .testimonial-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 1024px) { .testimonial-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .testimonial-grid { grid-template-columns: 1fr; } }
+
+/* ---- Welcome offer (25% off the first booking) ---- */
+.welcome-offer { background: linear-gradient(90deg, #17463f, #245e54 60%, #2f7566); color: #fff; }
+.welcome-offer-inner { display: flex; align-items: center; gap: 18px; padding-top: 16px; padding-bottom: 16px; flex-wrap: wrap; }
+.welcome-offer-inner > div { flex: 1; min-width: 220px; display: grid; gap: 2px; }
+.welcome-offer-inner strong { font-size: 1.05rem; }
+.welcome-offer-inner p { margin: 0; color: #d6e9e2; font-size: .9rem; }
+.welcome-offer-badge { background: var(--accent); color: #1c282e; font-weight: 900; letter-spacing: .04em; padding: 10px 14px; border-radius: 14px; font-size: 1.1rem; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.booking-offer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding: 8px 12px; border-radius: 12px; background: #fff6dc; color: #7a5600; font-weight: 700; }
+.booking-offer span { display: inline-flex; align-items: center; gap: 6px; }
+.booking-offer-hint { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; color: var(--forest); font-size: .85rem; font-weight: 600; }
+.price-struck { text-decoration: line-through; color: var(--muted); font-weight: 600; }
+.checkout-discount span { display: inline-flex; align-items: center; gap: 6px; color: #7a5600; font-weight: 700; }
+.checkout-discount strong { color: #1f7a4d; }
+.offer-note { color: #7a5600 !important; font-weight: 600; }

@@ -92,7 +92,7 @@ function describeReservation(row, now = Date.now()) {
       };
     case "CONFIRMED":
       if (row.payment_plan === "FULL") {
-        return { code: "PAID_IN_FULL_ONLINE", tone: "success", label: "Paid 100% online", detail: `${amount(total, currency)} paid on BOOKIFY` };
+        return { code: "PAID_IN_FULL_ONLINE", tone: "success", label: "Paid 100% online", detail: `${amount(total, currency)} paid on BOOKIFY${Number(row.discount_percent) > 0 ? ` (${row.discount_percent}% welcome offer)` : ""}` };
       }
       if (row.payment_plan === "DEPOSIT" && due <= 0) {
         return row.balance_paid_via === "IN_STORE"

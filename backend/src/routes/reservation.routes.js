@@ -8,6 +8,7 @@ const {
   getReservationById,
   cancelReservation,
   manageReservation,
+  getFirstBookingOffer,
   getAvailableSlots
 } = require("../controllers/reservation.controller");
 
@@ -41,6 +42,14 @@ router.post(
   verifyToken,
   requireRole("CLIENT", "BUSINESS_OWNER"),
   createReservation
+);
+
+// Is the welcome offer (25% off the first booking) available to this user?
+router.get(
+  "/offer",
+  verifyToken,
+  requireRole("CLIENT", "BUSINESS_OWNER"),
+  getFirstBookingOffer
 );
 
 // Get authenticated client's reservations

@@ -108,7 +108,11 @@ export function Checkout({ id }) {
           <div><span>Service</span><strong>{names.serviceName(reservation.service_id)}</strong></div>
           <div><span>Business</span><strong>{names.businessName(reservation.business_id)}</strong></div>
           {isAppointment(reservation) ? <div><span>Appointment</span><strong>{dateTime(reservation.starts_at)}</strong></div> : <><div><span>Plan</span><strong>{reservationKindLabel(reservation)}</strong></div><div><span>Valid</span><strong>{reservationWhen(reservation)}</strong></div></>}
-          <div><span>Full service price</span><strong>{money(reservation.total_amount, currency)}</strong></div>
+          {Number(reservation.discount_percent) > 0 ? <>
+            <div><span>Regular price</span><strong className="price-struck">{money(reservation.original_amount, currency)}</strong></div>
+            <div className="checkout-discount"><span><Icon name="tag" size={14}/> Welcome offer −{reservation.discount_percent}%</span><strong>−{money(Number(reservation.original_amount) - Number(reservation.total_amount), currency)}</strong></div>
+            <div><span>Your price</span><strong>{money(reservation.total_amount, currency)}</strong></div>
+          </> : <div><span>Full service price</span><strong>{money(reservation.total_amount, currency)}</strong></div>}
           {isPending(reservation.status)
             ? <div className="checkout-amount"><span>{plan === 'FULL' ? 'Due now — 100%' : 'Due now — 50%'}</span><strong>{money(dueNow, currency)}</strong></div>
             : <div className="checkout-amount"><span>Paid on BOOKIFY</span><strong>{money(reservation.amount_paid, currency)}</strong></div>}

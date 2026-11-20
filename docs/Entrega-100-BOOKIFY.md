@@ -30,6 +30,14 @@ powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey
 powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Accounts 500000 -BatchSize 2000 -VirtualUsers 20 -Seconds 10
 ```
 
+Resultados medidos contra Azure el 20/11/2026 (0 % de fallos en todas):
+
+| Azure | Prueba | Resultado |
+|---|---|---|
+| 0,5 vCPU, 1 réplica | 100 000 cuentas | 100 000 en ~7,3 s (13 700 cuentas/s) |
+| 0,5 vCPU, 1 réplica | 500 000 con límite de 10 s | 186 000 guardadas en Supabase en 10 s |
+| 0,5 vCPU, hasta 4 réplicas | 500 000 cuentas | 500 000 en 20,5 s (21 500/s); 340 000 en los primeros 10 s |
+
 Después de la prueba, borrar las cuentas con `backend/sql/cleanup-load-test-users.sql`
 (conserva las 5000 cuentas sembradas para las pruebas de login).
 

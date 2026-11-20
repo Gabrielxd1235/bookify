@@ -187,6 +187,17 @@ Medido contra la API local conectada a la misma base de Supabase:
 | 40 000 | 10 × 2000 | 1,8 s | ~22 800 | 0 % |
 | 100 000 | 20 × 2000 | 4,0 s | ~25 100 | 0 % |
 
+Medido contra **la API en Azure** (20/11/2026, lotes de 2000 con gzip, 0 % de fallos):
+
+| Configuración de Azure | Prueba | Resultado |
+|---|---|---|
+| 0,5 vCPU, máx. 1 réplica | 100 000 cuentas, 20 VU | 100 000 en ~7,3 s (13 700/s) |
+| 0,5 vCPU, máx. 1 réplica | 500 000 con límite de 10 s | **186 000** guardadas en 10 s |
+| 0,5 vCPU, **máx. 4 réplicas** | 500 000 completas, 30 VU | **500 000 en 20,5 s** (21 500/s); **340 000 en los primeros 10 s** |
+
+Azure añade réplicas en ~30 s, así que para la ventana de 10 s conviene "calentar"
+antes con una corrida corta (o subir temporalmente las réplicas mínimas).
+
 El techo lo pone la escritura en PostgreSQL (~23 000–25 000 filas/s); 500 000 cuentas
 toman ~20–25 s, y en una ventana de 10 s entran ~200 000–250 000.
 

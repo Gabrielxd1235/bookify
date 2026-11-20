@@ -20,7 +20,7 @@ async function main() {
     .select("id", { count: "exact", head: true })
     .like("email", pattern);
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(error.message || error.code || JSON.stringify(error));
 
   console.log(`Guardadas en Supabase:     ${count}`);
 
@@ -34,7 +34,7 @@ async function main() {
     .limit(1)
     .single();
 
-  if (firstError) throw new Error(firstError.message);
+  if (firstError) throw new Error(firstError.message || firstError.code || JSON.stringify(firstError));
 
   const { data: last, error: lastError } = await supabase
     .from("users")
@@ -44,7 +44,7 @@ async function main() {
     .limit(1)
     .single();
 
-  if (lastError) throw new Error(lastError.message);
+  if (lastError) throw new Error(lastError.message || lastError.code || JSON.stringify(lastError));
 
   const t0 = new Date(first.created_at);
   const seconds = (new Date(last.created_at) - t0) / 1000;
@@ -58,7 +58,7 @@ async function main() {
       .like("email", pattern)
       .lt("created_at", limit);
 
-    if (windowError) throw new Error(windowError.message);
+    if (windowError) throw new Error(windowError.message || windowError.code || JSON.stringify(windowError));
     console.log(`Guardadas en los primeros ${windowSeconds} s: ${inWindow}`);
   }
 }

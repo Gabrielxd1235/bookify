@@ -428,7 +428,9 @@ const getProfile = (req, res) => {
 // only accepts reserved loadtest-*@example.test emails, always as CLIENT.
 // Every account is validated like a normal registration and gets its own
 // bcrypt hash (cost 4, as other load-test accounts).
-const BATCH_MAX = 500;
+// Up to 2000 accounts per request (LOAD_TEST_BATCH_MAX). Fewer, larger
+// requests remove HTTP round trips, the main cost once hashing is cheap.
+const BATCH_MAX = Math.min(2000, Math.max(1, Number(process.env.LOAD_TEST_BATCH_MAX) || 2000));
 const LOAD_TEST_EMAIL = /^loadtest-[a-z0-9-]+@example\.test$/;
 
 const registerBatch = async (req, res) => {
@@ -476,12 +478,22 @@ const registerBatch = async (req, res) => {
       rows.push({ name, normalizedEmail, password });
     }
 
-    // One bcrypt hash per account (runs in the libuv thread pool)
+    // One bcrypt hash per distinct password (libuv thread pool). A batch that
+    // reuses a password, as the 100k-500k runs do, costs one hash instead of
+    // one per account; every account still stores a valid hash of its own
+    // password.
+    const hashByPassword = new Map();
+    for (const row of rows) {
+      if (!hashByPassword.has(row.password)) {
+        hashByPassword.set(row.password, bcrypt.hash(row.password, 4));
+      }
+    }
     const hashes = await Promise.all(
-      rows.map((row) => bcrypt.hash(row.password, 4))
+      rows.map((row) => hashByPassword.get(row.password))
     );
 
-    const { data, error } = await supabase
+    // No RETURNING: the API only needs to know how many rows were stored
+    const { count, error } = await supabase
       .from("users")
       .insert(
         rows.map((row, i) => ({
@@ -490,9 +502,9 @@ const registerBatch = async (req, res) => {
           password_hash: hashes[i],
           role: "CLIENT",
           is_active: true
-        }))
-      )
-      .select("id");
+        })),
+        { count: "exact" }
+      );
 
     if (error) {
       if (error.code === "23505") {
@@ -513,7 +525,7 @@ const registerBatch = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Batch registered successfully",
-      created: data.length
+      created: count ?? rows.length
     });
 
   } catch (error) {

@@ -1,6 +1,10 @@
 // Environment configuration
 require("dotenv").config();
 
+// Structured JSON logs (one object per line) for every console.* call
+const { logger, installStructuredConsole } = require("./utils/logger");
+installStructuredConsole();
+
 // Main dependencies
 const express = require("express");
 const cookieParser = require("cookie-parser");
@@ -29,6 +33,17 @@ const ownerApplicationRoutes = require("./routes/business-owner-application.rout
 const ownerApplicationAdminRoutes = require("./routes/business-owner-admin.routes");
 const businessMediaRoutes = require("./routes/business-media.routes");
 const mockCheckoutRoutes = require("./routes/mock-checkout.routes");
+const reviewRoutes = require("./routes/review.routes");
+
+// Request ids, response deadline, load shedding and error classification
+const {
+  requestContext,
+  loadShedding,
+  requestTimeout,
+  classifyError,
+  stats: resilienceStats,
+  markShuttingDown
+} = require("./middlewares/resilience.middleware");
 const categoryBrandingRoutes = require("./routes/category-branding.routes");
 // Background jobs
 const {
@@ -40,6 +55,11 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+
+// Every request: id + access log, overload protection, response deadline
+app.use(requestContext);
+app.use(loadShedding);
+app.use(requestTimeout);
 
 // Configure allowed frontend origins
 const allowedOrigins = (
@@ -85,9 +105,9 @@ app.use(cors({
 }));
 
 // Parse JSON request bodies (10 KB). Only the load-test batch registration,
-// and only with the load-test key, may send up to 256 KB (500 accounts).
+// and only with the load-test key, may send up to 1 MB (2000 accounts).
 const parseJson = express.json({ limit: "10kb" });
-const parseBatchJson = express.json({ limit: "256kb" });
+const parseBatchJson = express.json({ limit: "1mb" });
 
 app.use((req, res, next) => {
   if (req.path === "/api/auth/register-batch" && isLoadTestRequest(req)) {
@@ -205,6 +225,44 @@ app.use("/api/business-owner", ownerApplicationRoutes);
 app.use("/api/admin", ownerApplicationAdminRoutes);
 app.use("/api/businesses", businessMediaRoutes);
 app.use("/api/mock-checkout", mockCheckoutRoutes);
+app.use("/api", reviewRoutes);
+
+// Liveness: the process is up (used by Azure probes and load balancers)
+app.get("/api/health/live", (req, res) => {
+  return res.status(200).json({ success: true, status: "LIVE" });
+});
+
+// Readiness: the process can serve traffic, i.e. the database answers.
+// Returns 503 with the reason when a dependency is down.
+app.get("/api/health/ready", async (req, res) => {
+  const started = Date.now();
+  try {
+    const { error } = await supabase
+      .from("categories")
+      .select("id", { head: true, count: "exact" })
+      .abortSignal(AbortSignal.timeout(3000));
+
+    if (error) throw error;
+
+    return res.status(200).json({
+      success: true,
+      status: "READY",
+      database: { status: "UP", latencyMs: Date.now() - started },
+      server: resilienceStats()
+    });
+  } catch (error) {
+    const known = classifyError(error) || { reason: "DATABASE_ERROR", message: "The database returned an error" };
+    logger.error("readiness_failed", { requestId: req.id, reason: known.reason, error });
+    return res.status(503).json({
+      success: false,
+      status: "NOT_READY",
+      reason: known.reason,
+      message: known.message,
+      database: { status: "DOWN", latencyMs: Date.now() - started },
+      server: resilienceStats()
+    });
+  }
+});
 
 
 // Database connection check
@@ -319,15 +377,26 @@ app.use((err, req, res, next) => {
     });
   }
 
-  // Handle unexpected errors
-  console.error(
-    "Express error:",
-    err.message
-  );
+  // Expected infrastructure failures: answer 503 with the reason
+  const known = classifyError(err);
+  if (known) {
+    logger.error("dependency_failure", { requestId: req.id, reason: known.reason, url: req.originalUrl.split("?")[0], error: err });
+    res.setHeader("Retry-After", "5");
+    return res.status(known.status).json({
+      success: false,
+      reason: known.reason,
+      message: known.message,
+      requestId: req.id
+    });
+  }
 
+  // Handle unexpected errors
+  logger.error("unhandled_error", { requestId: req.id, url: req.originalUrl.split("?")[0], error: err });
   return res.status(500).json({
     success: false,
-    message: "Internal server error"
+    reason: "INTERNAL_ERROR",
+    message: "Internal server error",
+    requestId: req.id
   });
 });
 
@@ -342,28 +411,51 @@ if (require.main === module) {
       ? "127.0.0.1"
       : (process.env.HOST || "0.0.0.0");
 
-  app.listen(PORT, HOST, () => {
-
-    console.log(
-      `BOOKIFY API: http://localhost:${PORT}`
-    );
-
-    console.log(
-      `Environment: ${process.env.NODE_ENV || "development"}`
-    );
-
-    console.log(
-      `Rate limit: ${rateLimitMax} requests`
-    );
-
-    console.log(
-      `Rate limit window: ${rateLimitWindow} ms`
-    );
+  const server = app.listen(PORT, HOST, () => {
+    logger.info("server_started", {
+      url: `http://localhost:${PORT}`,
+      environment: process.env.NODE_ENV || "development",
+      rateLimitMax,
+      rateLimitWindowMs: rateLimitWindow
+    });
 
     // Start automatic reservation expiration
     if (process.env.NODE_ENV !== "test") {
       startReservationExpiryJob();
     }
+  });
+
+  // Keep connections longer than the Azure load balancer idle timeout
+  server.keepAliveTimeout = 65000;
+  server.headersTimeout = 66000;
+
+  // Graceful shutdown: Azure sends SIGTERM when a new revision replaces this
+  // one. Stop taking new work, let in-flight requests finish (max 10 s).
+  let closing = false;
+  const shutdown = (signal) => {
+    if (closing) return;
+    closing = true;
+    markShuttingDown();
+    logger.warn("shutdown_started", { signal });
+    server.close(() => {
+      logger.info("shutdown_complete", { signal });
+      process.exit(0);
+    });
+    setTimeout(() => {
+      logger.error("shutdown_forced", { signal });
+      process.exit(1);
+    }, 10000).unref();
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+
+  // Never die silently: log the cause of a crash before exiting
+  process.on("unhandledRejection", (reason) => {
+    logger.error("unhandled_rejection", { error: reason instanceof Error ? reason : { message: String(reason) } });
+  });
+  process.on("uncaughtException", (error) => {
+    logger.fatal("uncaught_exception", { error });
+    shutdown("uncaughtException");
   });
 }
 

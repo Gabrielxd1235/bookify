@@ -1,0 +1,105 @@
+/* Stars, ratings, reviews, testimonials, payment options and booking reasons */
+:root { --star: #e3a008; --star-off: #d9dedb; }
+
+.stars { display: inline-flex; gap: 2px; vertical-align: middle; }
+.star { position: relative; display: inline-flex; color: var(--star-off); }
+.star svg { fill: currentColor; stroke: currentColor; }
+.star.full { color: var(--star); }
+.star.half { color: var(--star); opacity: .5; }
+
+.star-input { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.star-pick { border: 0; background: none; padding: 2px; cursor: pointer; color: var(--star-off); border-radius: 8px; transition: transform .12s ease, color .12s ease; }
+.star-pick svg { fill: currentColor; }
+.star-pick.on { color: var(--star); }
+.star-pick:hover:not(:disabled) { transform: scale(1.12); }
+.star-pick:focus-visible { outline: 2px solid var(--forest); outline-offset: 2px; }
+.star-input-word { margin-left: 8px; font-size: .9rem; color: var(--muted); font-weight: 600; }
+
+.rating-badge { display: inline-flex; align-items: center; gap: 4px; font-size: .78rem; color: #6b4f00; background: #fff6dc; border: 1px solid #f3e1a6; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.rating-badge svg { fill: var(--star); stroke: var(--star); }
+.rating-badge small { color: #8a7a4d; }
+.rating-badge.rating-new { color: var(--forest); background: var(--forest-light); border-color: #cfe3da; }
+.rating-badge.rating-new svg { fill: none; stroke: currentColor; }
+.business-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.detail-rating-link { text-decoration: none; }
+
+.business-visual { position: relative; }
+.business-visual > img.business-logo-badge, .business-logo-badge { position: absolute; z-index: 2; transform: none !important; right: 12px; top: 12px; width: 52px; height: 52px; border-radius: 14px; object-fit: cover; background: #fff; border: 3px solid #fff; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.detail-title-row { display: flex; align-items: center; gap: 14px; }
+.detail-logo { width: 64px; height: 64px; border-radius: 16px; object-fit: cover; border: 1px solid var(--line); background: #fff; flex: none; }
+
+/* Business reviews */
+.reviews-overview { display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: center; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+.reviews-score { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.reviews-score > strong { font-size: 2.6rem; line-height: 1; color: var(--ink); }
+.reviews-score small { color: var(--muted); }
+.rating-bars { display: grid; gap: 6px; }
+.rating-bar { display: grid; grid-template-columns: 34px 1fr 28px; gap: 8px; align-items: center; font-size: .82rem; color: var(--muted); }
+.rating-bar span { display: inline-flex; align-items: center; gap: 2px; }
+.rating-bar span svg { fill: var(--star); stroke: var(--star); }
+.rating-bar div { height: 8px; border-radius: 999px; background: #eef1ef; overflow: hidden; }
+.rating-bar i { display: block; height: 100%; background: var(--star); border-radius: 999px; }
+.review-form, .my-review { margin-top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: #fbfcfb; display: grid; gap: 10px; }
+.review-form textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font: inherit; resize: vertical; background: #fff; }
+.review-form-actions, .my-review-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.my-review { grid-template-columns: 1fr auto; align-items: start; }
+.my-review p { margin: 6px 0 0; color: var(--ink); }
+.review-hint { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: .9rem; margin: 14px 0 0; }
+.review-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-top: 16px; }
+.review-card { padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: #fff; display: grid; gap: 8px; }
+.review-card header { display: flex; align-items: center; gap: 10px; }
+.review-card header div { display: grid; flex: 1; min-width: 0; }
+.review-card header small { color: var(--muted); font-size: .78rem; }
+.review-card p { margin: 0; color: #3b4850; line-height: 1.5; }
+.review-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--forest-light); color: var(--forest); font-weight: 700; flex: none; }
+.review-verified { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; color: var(--forest); background: var(--forest-light); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.review-pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; color: var(--muted); }
+
+/* Testimonials on the landing page */
+.testimonials-section { background: linear-gradient(180deg, #fff 0%, #f6f8f6 100%); }
+.testimonials-section .section-top p { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.testimonial-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+.testimonial-card { margin: 0; padding: 22px; border-radius: 20px; background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; gap: 12px; align-content: start; }
+.testimonial-card blockquote { margin: 0; color: #2f3c43; line-height: 1.6; font-size: .98rem; }
+.testimonial-card figcaption { display: flex; align-items: center; gap: 10px; }
+.testimonial-card figcaption div { display: grid; }
+.testimonial-card figcaption small { color: var(--muted); font-size: .78rem; }
+.testimonial-form { margin: 0 0 22px; }
+
+/* Checkout payment options */
+.pay-options { display: grid; gap: 10px; margin-bottom: 14px; }
+.pay-option { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 16px; background: #fff; text-align: left; cursor: pointer; font: inherit; color: var(--ink); transition: border-color .15s ease, box-shadow .15s ease; }
+.pay-option:hover:not(:disabled) { border-color: #b9d3c9; }
+.pay-option.active { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(36,94,84,.12); background: #fbfdfc; }
+.pay-option:disabled { opacity: .6; cursor: not-allowed; }
+.pay-option-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--forest-light); color: var(--forest); }
+.pay-option-text { display: grid; gap: 2px; }
+.pay-option-text small { color: var(--muted); }
+.pay-option-amount { font-weight: 700; font-size: 1.05rem; }
+.balance-box { width: 100%; display: grid; gap: 10px; padding: 14px; border-radius: 16px; border: 1px dashed #b9d3c9; background: #f7fbf9; text-align: left; margin: 6px 0 4px; }
+.balance-box div { display: grid; gap: 2px; }
+.balance-box small { color: var(--muted); }
+
+/* Reason column */
+.reason-cell { display: grid; gap: 2px; min-width: 170px; max-width: 260px; }
+.reason-cell strong { display: inline-flex; align-items: center; gap: 5px; font-size: .84rem; }
+.reason-cell small { color: var(--muted); font-size: .78rem; line-height: 1.35; }
+.reason-success strong { color: #1f7a4d; }
+.reason-info strong { color: #245e8f; }
+.reason-warning strong { color: #9a6700; }
+.reason-danger strong { color: #b42318; }
+.reason-muted strong { color: #5f6b72; }
+.notice-line.reason-danger, .notice-line.reason-warning { color: #8a3b12; }
+.owner-booking-actions { display: flex; flex-wrap: wrap; gap: 6px; min-width: 150px; }
+.owner-booking-actions .btn { padding: 6px 10px; font-size: .78rem; }
+.modal-field { text-align: left; margin: 4px 0 14px; }
+.modal-field textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 10px; font: inherit; resize: vertical; }
+
+@media (max-width: 720px) {
+  .reviews-overview { grid-template-columns: 1fr; }
+  .my-review { grid-template-columns: 1fr; }
+  .pay-option { grid-template-columns: auto 1fr; }
+  .pay-option-amount { grid-column: 2; }
+  .reason-cell { max-width: none; }
+  .detail-logo { width: 52px; height: 52px; }
+}

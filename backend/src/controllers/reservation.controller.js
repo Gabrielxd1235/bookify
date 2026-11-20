@@ -20,9 +20,18 @@ const RESERVATION_FIELDS = `
   balance_amount,
   currency,
   payment_expires_at,
+  payment_plan,
+  amount_paid,
+  paid_in_full_at,
+  balance_paid_via,
+  status_reason,
+  status_changed_by,
   created_at,
   updated_at
 `;
+
+// Owner/admin actions on a received booking
+const OWNER_ACTIONS = new Set(["BALANCE_PAID_IN_STORE", "COMPLETED", "NO_SHOW", "CANCEL"]);
 
 // Validate positive integer IDs
 function isValidId(value) {
@@ -210,7 +219,7 @@ async function createReservation(req, res) {
 
     return res.status(201).json({
       success: true,
-      message: "Reservation created. Deposit payment is required.",
+      message: "Reservation created. Pay 50% or 100% within 5 minutes to confirm it.",
       reservation: data,
       payment: {
         required: true,
@@ -580,10 +589,21 @@ async function cancelReservation(req, res) {
       });
     }
 
+    // Optional reason written by the client (shown to the business)
+    const rawReason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+    if (rawReason.length > 300) {
+      return res.status(400).json({
+        success: false,
+        message: "The cancellation reason cannot exceed 300 characters"
+      });
+    }
+
     const { data, error } = await supabase
       .from("reservations")
       .update({
         status: "CANCELLED",
+        status_reason: rawReason || "Cancelled by the client before paying",
+        status_changed_by: "CLIENT",
         updated_at: new Date().toISOString()
       })
       .eq("id", id)
@@ -620,6 +640,67 @@ async function cancelReservation(req, res) {
       success: false,
       message: "Internal server error"
     });
+  }
+}
+
+// PATCH /api/reservations/:id/manage   (business owner or admin)
+// body: { action: BALANCE_PAID_IN_STORE | COMPLETED | NO_SHOW | CANCEL, reason? }
+async function manageReservation(req, res) {
+  const { id } = req.params;
+
+  if (!isValidId(id)) {
+    return res.status(400).json({ success: false, message: "Invalid reservation ID" });
+  }
+
+  const action = typeof req.body?.action === "string" ? req.body.action.trim().toUpperCase() : "";
+  const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+
+  if (!OWNER_ACTIONS.has(action)) {
+    return res.status(400).json({
+      success: false,
+      message: "Action must be BALANCE_PAID_IN_STORE, COMPLETED, NO_SHOW or CANCEL"
+    });
+  }
+
+  if (reason.length > 300) {
+    return res.status(400).json({ success: false, message: "The reason cannot exceed 300 characters" });
+  }
+
+  if (action === "CANCEL" && reason.length < 3) {
+    return res.status(400).json({ success: false, message: "Write the reason for the cancellation" });
+  }
+
+  try {
+    const { data, error } = await supabase.rpc("bookify_owner_update_reservation", {
+      p_reservation_id: Number(id),
+      p_actor_id: Number(req.user.id),
+      p_is_admin: req.user.role === "ADMIN",
+      p_action: action,
+      p_reason: reason || null
+    });
+
+    if (error) {
+      const status = { P0002: 404, "42501": 403, "22023": 400, P0001: 409 }[error.code] || 500;
+      if (status === 500) console.error("Reservation management error:", error.code, error.message);
+      return res.status(status).json({
+        success: false,
+        message: status === 500 ? "Unable to update the reservation" : error.message
+      });
+    }
+
+    const [detailed] = await attachReservationDetails([data], { includeClient: true });
+
+    console.info("Reservation updated by business", { reservationId: Number(id), action, by: req.user.role });
+
+    return res.status(200).json({
+      success: true,
+      message: "Reservation updated",
+      reservation: detailed || data
+    });
+
+  } catch (error) {
+    console.error("Reservation management error:", error.message);
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 }
 
@@ -706,5 +787,6 @@ module.exports = {
   getBusinessReservationSummary,
   getReservationById,
   cancelReservation,
+  manageReservation,
   getAvailableSlots
 };

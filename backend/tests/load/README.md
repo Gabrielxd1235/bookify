@@ -162,10 +162,39 @@ powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey
 
 ### Registro por lotes (`bookify-register-batch.js`)
 
-`POST /api/auth/register-batch` registra hasta 50 cuentas por petición con un solo insert.
+`POST /api/auth/register-batch` registra hasta 2000 cuentas por petición con un solo insert.
 Solo existe con la clave de prueba (sin ella responde 404) y solo acepta emails
 `loadtest-*@example.test` como CLIENT. Cada cuenta se valida y recibe su propio hash.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2 -BatchSize 50
 ```
+
+## 9. Pruebas de 100 000 a 500 000 cuentas (20/11/2026)
+
+Cambios para llegar a esa escala:
+
+- Lotes de hasta **2000** cuentas por petición (`BATCH_SIZE`, por defecto 1000).
+- El cuerpo de cada lote viaja comprimido con **gzip** (`COMPRESS=0` lo desactiva).
+- Una contraseña por lote (`SHARED_PASSWORD=1`, por defecto): el servidor cifra con
+  bcrypt **una vez por contraseña distinta**. `SHARED_PASSWORD=0` vuelve a una por cuenta.
+- El INSERT ya no devuelve las filas (`count` en vez de `RETURNING id`).
+
+Medido contra la API local conectada a la misma base de Supabase:
+
+| Cuentas | Lotes en paralelo | Tiempo | Cuentas/s | Fallos |
+|---|---|---|---|---|
+| 40 000 | 10 × 2000 | 1,8 s | ~22 800 | 0 % |
+| 100 000 | 20 × 2000 | 4,0 s | ~25 100 | 0 % |
+
+El techo lo pone la escritura en PostgreSQL (~23 000–25 000 filas/s); 500 000 cuentas
+toman ~20–25 s, y en una ventana de 10 s entran ~200 000–250 000.
+
+```powershell
+cd C:Devookifyackend
+powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 100000 -BatchSize 2000 -VirtualUsers 20
+powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 500000 -BatchSize 2000 -VirtualUsers 20 -Seconds 10
+```
+
+Al terminar, borrar las cuentas de prueba con `backend/sql/cleanup-load-test-users.sql`
+(PASO 1 vista previa, PASO 2 borrado).

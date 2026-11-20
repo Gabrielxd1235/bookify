@@ -7,6 +7,7 @@ const {
   getBusinessReservationSummary,
   getReservationById,
   cancelReservation,
+  manageReservation,
   getAvailableSlots
 } = require("../controllers/reservation.controller");
 
@@ -68,6 +69,14 @@ router.get(
   verifyToken,
   requireRole("BUSINESS_OWNER", "ADMIN"),
   getBusinessReservationSummary
+);
+
+// Settle the balance in store, mark completed / no-show, or cancel with a reason
+router.patch(
+  "/:id/manage",
+  verifyToken,
+  requireRole("BUSINESS_OWNER", "ADMIN"),
+  manageReservation
 );
 
 // Get reservations for a specific business

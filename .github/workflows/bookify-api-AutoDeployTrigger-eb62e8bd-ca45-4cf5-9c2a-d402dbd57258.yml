@@ -17,7 +17,30 @@ permissions:
   id-token: write
 
 jobs:
+  # 1. Nothing is deployed unless the backend tests pass
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      NODE_ENV: test
+      SUPABASE_URL: http://127.0.0.1:9
+      SUPABASE_SECRET_KEY: ci-dummy-key
+      JWT_SECRET: ci-only-secret-0123456789abcdef0123456789
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: node --test
+
+  # 2. Build the image, roll out a new revision, then verify it is healthy
   build-and-deploy:
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -52,3 +75,14 @@ jobs:
             --name bookify-api \
             --resource-group bookify-rg \
             --image ghcr.io/gabrielxd1235/bookify-api:${{ github.sha }}
+
+      # Smoke test: the new revision must answer /api/health/ready (API + DB)
+      - name: Verify the deployed API is ready
+        run: |
+          URL="https://$(az containerapp show --name bookify-api --resource-group bookify-rg --query properties.configuration.ingress.fqdn -o tsv)"
+          for i in $(seq 1 18); do
+            if curl -fsS --max-time 20 "$URL/api/health/ready"; then echo; echo "API ready"; exit 0; fi
+            echo "Waiting for the new revision ($i/18)..."; sleep 10
+          done
+          echo "The new revision did not become ready" >&2
+          exit 1

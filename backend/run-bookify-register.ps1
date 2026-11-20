@@ -36,8 +36,8 @@ param(
   # Ademas del registro, hace login y lee el perfil de cada cuenta
   [switch]$Full,
 
-  # 0 = una cuenta por peticion. 1-500 = registro por lotes (/api/auth/register-batch)
-  [ValidateRange(0, 500)]
+  # 0 = una cuenta por peticion. 1-2000 = registro por lotes (/api/auth/register-batch)
+  [ValidateRange(0, 2000)]
   [int]$BatchSize = 0,
 
   [string]$LoadTestKey = $env:LOAD_TEST_KEY,

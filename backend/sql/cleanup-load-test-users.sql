@@ -5,7 +5,10 @@
 -- Se borran unicamente usuarios que cumplen TODO esto:
 --   * role = 'CLIENT'                       (nunca ADMIN ni BUSINESS_OWNER)
 --   * email de prueba generado por scripts:
---       loadtest-%@example.test      (seeder y prueba de registro k6)
+--       loadtest-reg%@example.test   (pruebas de registro k6: una a una y por lotes)
+--   Las cuentas del seeder (loadtest-<run>-NNNNN, sin "reg") se CONSERVAN: son las
+--   5000 cuentas con contrasena conocida que usan las pruebas de login. Para
+--   borrarlas tambien, cambiar 'loadtest-reg%' por 'loadtest-%'.
 --       k6.bookify.%@example.com     (prueba de registro antigua, 26/10/2026)
 --   * sin reservas, sin pagos y sin negocios a su nombre
 -- Sus refresh_tokens y solicitudes de dueno se borran solos (ON DELETE CASCADE).
@@ -20,7 +23,7 @@ WITH objetivo AS (
   SELECT u.id
   FROM public.users u
   WHERE u.role = 'CLIENT'
-    AND (u.email LIKE 'loadtest-%@example.test'
+    AND (u.email LIKE 'loadtest-reg%@example.test'
          OR u.email LIKE 'k6.bookify.%@example.com')
     AND NOT EXISTS (SELECT 1 FROM public.reservations r WHERE r.user_id = u.id)
     AND NOT EXISTS (SELECT 1 FROM public.bookify_mock_deposit_payments p WHERE p.user_id = u.id)
@@ -43,7 +46,7 @@ BEGIN;
 
 DELETE FROM public.users u
 WHERE u.role = 'CLIENT'
-  AND (u.email LIKE 'loadtest-%@example.test'
+  AND (u.email LIKE 'loadtest-reg%@example.test'
        OR u.email LIKE 'k6.bookify.%@example.com')
   AND NOT EXISTS (SELECT 1 FROM public.reservations r WHERE r.user_id = u.id)
   AND NOT EXISTS (SELECT 1 FROM public.bookify_mock_deposit_payments p WHERE p.user_id = u.id)
@@ -51,7 +54,7 @@ WHERE u.role = 'CLIENT'
 
 -- Verificacion: debe quedar 0 cuentas de prueba y los mismos admins/owners
 SELECT
-  count(*) FILTER (WHERE email LIKE 'loadtest-%@example.test'
+  count(*) FILTER (WHERE email LIKE 'loadtest-reg%@example.test'
                       OR email LIKE 'k6.bookify.%@example.com') AS cuentas_prueba_restantes,
   count(*) FILTER (WHERE role = 'ADMIN')          AS admins,
   count(*) FILTER (WHERE role = 'BUSINESS_OWNER') AS owners,

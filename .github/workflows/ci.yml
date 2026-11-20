@@ -1,0 +1,78 @@
+name: BOOKIFY CI (tests and build)
+
+# Runs on every push and pull request. The API deploy workflow repeats the
+# backend tests and only deploys when they pass, then checks /api/health/ready.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend - unit and API tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      NODE_ENV: test
+      # Tests never reach a real database: dummy credentials only
+      SUPABASE_URL: http://127.0.0.1:9
+      SUPABASE_SECRET_KEY: ci-dummy-key
+      JWT_SECRET: ci-only-secret-0123456789abcdef0123456789
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Syntax check of every backend file
+        run: for f in $(find src scripts -name "*.js" -o -name "*.cjs"); do node --check "$f"; done
+      - name: Tests
+        run: node --test
+      - name: Docker image builds
+        working-directory: .
+        run: docker build -t bookify-api:ci ./backend
+
+  frontend:
+    name: Frontend - checks, tests and production build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Imports, unit tests and build
+        run: npm run verify
+
+  k6-scripts:
+    name: Load test scripts are valid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: grafana/setup-k6-action@v1
+      - name: Inspect every k6 script (no requests are sent)
+        working-directory: backend/tests/load
+        run: |
+          for f in bookify-pagination.js bookify-register-batch.js; do
+            k6 inspect -e LOAD_TEST_KEY=ci-dummy-key-0123456789abcdef0123456789 "$f" > /dev/null
+            echo "ok $f"
+          done

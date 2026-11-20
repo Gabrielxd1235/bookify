@@ -1,9 +1,11 @@
 "use strict";
 const express = require("express");
 const { verifyToken } = require("../middlewares/auth.middleware");
-const { payDeposit } = require("../controllers/mock-checkout.controller");
+const { payDeposit, payBalance } = require("../controllers/mock-checkout.controller");
 const router = express.Router();
 router.use(verifyToken);
-// Development-only: the signed-in reservation owner may simulate the exact 50% deposit.
+// Demo checkout: the signed-in reservation owner pays 50 % (DEPOSIT) or 100 % (FULL)
 router.post("/reservations/:reservationId/pay", payDeposit);
+// Demo checkout: pay the remaining 50 % online after a deposit
+router.post("/reservations/:reservationId/pay-balance", payBalance);
 module.exports = router;

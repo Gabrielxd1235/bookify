@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
 import { balanceDue, canDemoPay, canPayBalance } from '../lib/payment.js';
+import { forgetWelcomeOffer } from '../lib/offer.js';
 import { dateTime, money } from '../lib/format.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Link } from '../lib/router.jsx';
@@ -84,6 +85,7 @@ export function Checkout({ id }) {
         throw Error('The payment was processed but the booking could not be verified. Refresh your bookings.');
       }
       setPayment(result.payment);
+      forgetWelcomeOffer();
       toast(success, 'success');
     } catch (err) {
       setError(err.message);

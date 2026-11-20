@@ -49,61 +49,61 @@ const DAY = (name, price, description) => ({ name, price, duration_minutes: 60, 
 
 const BUSINESSES = [
   { slug: "navaja", category: "Barbershops", hours: "barber", name: "Navaja & Barba Studio", address: "Av. José Larco 812, Miraflores, Lima", phone: "+51 987 210 431",
-    description: "Barbería clásica con toallas calientes, navaja y asesoría de estilo. Ambiente industrial con ladrillo visto y buena música.",
-    photos: ["barber1", "barber2"], services: [A("Corte clásico", 35, 45, "Corte a tijera o máquina con lavado y peinado."), A("Corte + barba", 55, 60, "Corte completo y perfilado de barba con toalla caliente."), SUB("Club Barba mensual", 120, "MONTH", "4 cortes y arreglos de barba ilimitados durante el mes.")] },
+    description: "Classic barbershop with hot towels, straight razors and style advice. Industrial vibe with exposed brick and good music.",
+    photos: ["barber1", "barber2"], services: [A("Classic haircut", 35, 45, "Scissor or clipper cut with wash and styling."), A("Haircut + beard", 55, 60, "Full haircut and beard shaping with a hot towel."), SUB("Monthly Beard Club", 120, "MONTH", "4 haircuts and unlimited beard trims during the month.")] },
   { slug: "gentlemen", category: "Barbershops", hours: "barber", name: "The Gentlemen Barber Co.", address: "Calle Las Begonias 455, San Isidro, Lima", phone: "+51 976 554 120",
-    description: "Barbería premium para ejecutivos: fade, afeitado tradicional y productos de grooming importados.",
-    photos: ["barber3", "barber4"], services: [A("Fade premium", 40, 45, "Degradado a detalle con acabado a navaja."), A("Afeitado tradicional", 30, 30, "Afeitado con espuma caliente y bálsamo."), PACK("Pack 5 cortes", 170, 5, 90, "Cinco cortes para usar en 90 días.")] },
+    description: "Premium barbershop for professionals: fades, traditional shaves and imported grooming products.",
+    photos: ["barber3", "barber4"], services: [A("Premium fade", 40, 45, "Detailed fade with a straight-razor finish."), A("Traditional shave", 30, 30, "Hot-lather shave finished with aftershave balm."), PACK("5-haircut pack", 170, 5, 90, "Five haircuts to use within 90 days.")] },
   { slug: "bigote", category: "Barbershops", hours: "barber", name: "Barbería Don Bigote", address: "Jr. Batallón Ayacucho 271, Barranco, Lima", phone: "+51 954 330 876",
-    description: "Barbería de barrio con más de 10 años en Barranco. Precios justos y atención rápida.",
-    photos: ["barber5", "barber6"], services: [A("Corte de cabello", 30, 40, "Corte rápido con acabado limpio."), A("Diseño de barba", 25, 30, "Perfilado y diseño de barba."), SUB("Plan semanal", 45, "WEEK", "Mantenimiento de corte y barba toda la semana.")] },
+    description: "Neighborhood barbershop with more than 10 years in Barranco. Fair prices and quick service.",
+    photos: ["barber5", "barber6"], services: [A("Haircut", 30, 40, "Quick haircut with a clean finish."), A("Beard design", 25, 30, "Beard shaping and design."), SUB("Weekly plan", 45, "WEEK", "Haircut and beard maintenance all week long.")] },
   { slug: "glow", category: "Beauty Salons", hours: "salon", name: "Glow Beauty Lounge", address: "Av. Primavera 1240, Santiago de Surco, Lima", phone: "+51 991 204 557",
-    description: "Salón de belleza integral: color, cortes, tratamientos capilares y peinados para eventos.",
-    photos: ["hair1", "hair2", "hair4"], services: [A("Corte y brushing", 60, 60, "Lavado, corte personalizado y brushing."), A("Tinte completo", 150, 120, "Color de raíz a puntas con productos sin amoníaco."), PACK("Pack 4 brushing", 140, 4, 60, "Cuatro sesiones de brushing en 60 días.")] },
+    description: "Full-service beauty salon: color, haircuts, hair treatments and event styling.",
+    photos: ["hair1", "hair2", "hair4"], services: [A("Haircut and blow-dry", 60, 60, "Wash, personalized cut and blow-dry."), A("Full hair color", 150, 120, "Root-to-tip color with ammonia-free products."), PACK("4 blow-dry pack", 140, 4, 60, "Four blow-dry sessions within 60 days.")] },
   { slug: "nailart", category: "Beauty Salons", hours: "salon", name: "Nail Art Boutique", address: "Calle Schell 320, Miraflores, Lima", phone: "+51 972 118 640",
-    description: "Manicure y pedicure con diseños a mano, gel y acrílico. Esterilización hospitalaria de herramientas.",
-    photos: ["nail1", "nail2", "nail3"], services: [A("Manicure en gel", 45, 60, "Limpieza, esmaltado en gel y diseño simple."), A("Pedicure spa", 55, 60, "Exfoliación, hidratación y esmaltado."), SUB("Membresía uñas mensual", 160, "MONTH", "Manicure en gel cada semana durante el mes.")] },
+    description: "Hand-painted nail art, gel and acrylic manicures and pedicures. Hospital-grade tool sterilization.",
+    photos: ["nail1", "nail2", "nail3"], services: [A("Gel manicure", 45, 60, "Cleaning, gel polish and a simple design."), A("Spa pedicure", 55, 60, "Exfoliation, hydration and polish."), SUB("Monthly nail membership", 160, "MONTH", "A gel manicure every week for a month.")] },
   { slug: "belladonna", category: "Beauty Salons", hours: "salon", name: "Studio Bella Donna", address: "Av. Salaverry 2050, Jesús María, Lima", phone: "+51 965 447 302",
-    description: "Estudio de maquillaje y peinado para novias, graduaciones y eventos sociales.",
-    photos: ["hair3", "hair5", "hair6"], services: [A("Alisado con keratina", 220, 150, "Tratamiento de keratina con sellado térmico."), A("Maquillaje social", 90, 60, "Maquillaje profesional para eventos."), A("Peinado de evento", 80, 60, "Recogidos, ondas o semirecogidos.")] },
+    description: "Makeup and hairstyling studio for weddings, graduations and social events.",
+    photos: ["hair3", "hair5", "hair6"], services: [A("Keratin straightening", 220, 150, "Keratin treatment with heat sealing."), A("Event makeup", 90, 60, "Professional makeup for special occasions."), A("Event hairstyle", 80, 60, "Updos, waves or half-up styles.")] },
   { slug: "zen", category: "Spas", hours: "spa", name: "Zen Garden Spa", address: "Av. Camino Real 390, San Isidro, Lima", phone: "+51 989 330 145",
-    description: "Spa urbano con circuito de aguas, sauna y tratamientos faciales en un jardín interior.",
-    photos: ["spa1", "spa2", "spa5"], services: [DAY("Circuito de aguas (día completo)", 85, "Acceso a sauna, jacuzzi y zona de relajación todo el día."), A("Facial hidratante", 120, 60, "Limpieza profunda e hidratación con mascarilla."), SUB("Membresía relax mensual", 280, "MONTH", "Circuito ilimitado y un facial al mes.")] },
+    description: "Urban spa with a water circuit, sauna and facial treatments inside an indoor garden.",
+    photos: ["spa1", "spa2", "spa5"], services: [DAY("Water circuit (full day)", 85, "All-day access to the sauna, jacuzzi and relaxation area."), A("Hydrating facial", 120, 60, "Deep cleansing and hydration with a face mask."), SUB("Monthly relax membership", 280, "MONTH", "Unlimited circuit access and one facial per month.")] },
   { slug: "aqua", category: "Spas", hours: "spa", name: "Aqua Serena Day Spa", address: "Av. La Molina 1105, La Molina, Lima", phone: "+51 958 902 311",
-    description: "Day spa familiar con piscina temperada, piedras calientes y rituales para parejas.",
-    photos: ["spa3", "spa4", "spa6"], services: [DAY("Day pass spa", 99, "Piscina temperada, sauna y bata incluida."), A("Masaje con piedras calientes", 150, 75, "Masaje relajante con piedras volcánicas."), PACK("Pack 3 rituales", 390, 3, 120, "Tres rituales de spa en cuatro meses.")] },
+    description: "Family day spa with a heated pool, hot stone massages and couples rituals.",
+    photos: ["spa3", "spa4", "spa6"], services: [DAY("Spa day pass", 99, "Heated pool, sauna and bathrobe included."), A("Hot stone massage", 150, 75, "Relaxing massage with volcanic stones."), PACK("3-ritual pack", 390, 3, 120, "Three spa rituals within four months.")] },
   { slug: "manos", category: "Massage Centers", hours: "massage", name: "Manos de Seda Masajes", address: "Av. Arequipa 2640, Lince, Lima", phone: "+51 943 776 018",
-    description: "Centro de masajes terapéuticos y relajantes con terapeutas certificados.",
-    photos: ["mass1", "mass2", "mass4"], services: [A("Masaje relajante", 90, 60, "Masaje de cuerpo completo con aceites esenciales."), A("Masaje descontracturante", 110, 60, "Trabajo profundo en espalda, cuello y hombros."), PACK("Pack 4 masajes", 360, 4, 90, "Cuatro masajes de 60 minutos en 90 días.")] },
+    description: "Therapeutic and relaxing massage center with certified therapists.",
+    photos: ["mass1", "mass2", "mass4"], services: [A("Relaxing massage", 90, 60, "Full-body massage with essential oils."), A("Deep tissue massage", 110, 60, "Focused work on back, neck and shoulders."), PACK("4-massage pack", 360, 4, 90, "Four 60-minute massages within 90 days.")] },
   { slug: "thai", category: "Massage Centers", hours: "massage", name: "Thai Balance Center", address: "Calle Berlín 545, Miraflores, Lima", phone: "+51 936 510 284",
-    description: "Masaje tailandés tradicional y reflexología en un espacio inspirado en Chiang Mai.",
-    photos: ["mass3", "mass5", "mass6"], services: [A("Masaje tailandés", 130, 90, "Estiramientos y presión en puntos de energía."), A("Reflexología podal", 70, 45, "Masaje de pies con técnica de reflexología."), SUB("Plan bienestar mensual", 320, "MONTH", "Un masaje tailandés por semana durante el mes.")] },
+    description: "Traditional Thai massage and reflexology in a space inspired by Chiang Mai.",
+    photos: ["mass3", "mass5", "mass6"], services: [A("Thai massage", 130, 90, "Stretching and pressure on energy points."), A("Foot reflexology", 70, 45, "Foot massage using reflexology techniques."), SUB("Monthly wellness plan", 320, "MONTH", "One Thai massage per week for a month.")] },
   { slug: "iron", category: "Gyms", hours: "gym", name: "Iron Pulse Fitness", address: "Av. Caminos del Inca 1410, Santiago de Surco, Lima", phone: "+51 981 667 230",
-    description: "Gimnasio de fuerza con zona de peso libre, cardio y entrenadores en sala.",
-    photos: ["gym1", "gym3", "gym4"], services: [SUB("Membresía mensual", 129, "MONTH", "Acceso libre a sala de pesas y cardio."), DAY("Pase diario", 20, "Entrena un día completo sin membresía."), SUB("Plan trimestral", 349, "QUARTER", "Tres meses de acceso con evaluación física.")] },
+    description: "Strength gym with a free-weights area, cardio zone and coaches on the floor.",
+    photos: ["gym1", "gym3", "gym4"], services: [SUB("Monthly membership", 129, "MONTH", "Unlimited access to the weights and cardio area."), DAY("Day pass", 20, "Train for a whole day without a membership."), SUB("Quarterly plan", 349, "QUARTER", "Three months of access with a fitness assessment.")] },
   { slug: "fitzone", category: "Gyms", hours: "gym", name: "FitZone 24/7", address: "Av. San Luis 2020, San Borja, Lima", phone: "+51 977 845 019",
-    description: "Gimnasio moderno con máquinas de última generación, clases grupales y entrenamiento personal.",
-    photos: ["gym2", "gym5", "gym6"], services: [SUB("Membresía mensual", 99, "MONTH", "Acceso a máquinas y clases grupales."), SUB("Membresía anual", 990, "YEAR", "Doce meses al precio de diez."), A("Entrenamiento personal", 60, 60, "Sesión uno a uno con entrenador certificado.")] },
+    description: "Modern gym with state-of-the-art machines, group classes and personal training.",
+    photos: ["gym2", "gym5", "gym6"], services: [SUB("Monthly membership", 99, "MONTH", "Access to machines and group classes."), SUB("Annual membership", 990, "YEAR", "Twelve months for the price of ten."), A("Personal training", 60, 60, "One-on-one session with a certified trainer.")] },
   { slug: "prana", category: "Gyms", hours: "yoga", name: "Prana Yoga & Pilates", address: "Av. Grau 315, Barranco, Lima", phone: "+51 962 140 733",
-    description: "Estudio de yoga, pilates y meditación con luz natural y grupos reducidos.",
-    photos: ["yoga1", "yoga2", "yoga4"], services: [A("Clase de yoga", 35, 60, "Clase guiada de hatha o vinyasa."), PACK("Pack 8 clases", 240, 8, 60, "Ocho clases para usar en dos meses."), SUB("Mensual ilimitado", 199, "MONTH", "Todas las clases de yoga y pilates del mes.")] }
+    description: "Yoga, pilates and meditation studio with natural light and small groups.",
+    photos: ["yoga1", "yoga2", "yoga4"], services: [A("Yoga class", 35, 60, "Guided hatha or vinyasa class."), PACK("8-class pack", 240, 8, 60, "Eight classes to use within two months."), SUB("Unlimited monthly", 199, "MONTH", "Every yoga and pilates class for a month.")] }
 ];
 
 const REVIEWERS = ["Lucía Fernández", "Diego Ramírez", "Valeria Quispe", "Andrés Salazar", "Camila Torres", "Mateo Gutiérrez", "Sofía Mendoza", "Joaquín Paredes", "Daniela Rojas", "Renzo Castillo"];
 
 const COMMENTS = {
-  5: ["Excelente atención, muy puntuales y el lugar impecable.", "Reservé por BOOKIFY en un minuto y me atendieron a la hora exacta.", "El mejor servicio que he probado en Lima, volveré seguro.", "Personal muy amable y profesional. Totalmente recomendado.", "Pagué el 50% online y el resto en el local, súper práctico."],
-  4: ["Muy buen servicio, solo tuve que esperar unos minutos.", "Buena relación calidad-precio y ambiente agradable.", "Me gustó mucho, aunque el estacionamiento es complicado.", "Atención cálida y resultado muy bueno."],
-  3: ["El servicio estuvo bien, pero el local estaba algo lleno.", "Correcto, aunque esperaba un poco más por el precio."]
+  5: ["Excellent service, very punctual and the place is spotless.", "I booked on BOOKIFY in a minute and they saw me right on time.", "The best service I have tried in Lima. I will definitely be back.", "Very friendly and professional staff. Highly recommended.", "I paid 50% online and the rest at the shop. Super convenient."],
+  4: ["Very good service, I only had to wait a few minutes.", "Good value for money and a pleasant atmosphere.", "I really liked it, although parking is a bit tricky.", "Warm service and a great result."],
+  3: ["The service was fine, but the place was rather crowded.", "Decent, although I expected a bit more for the price."]
 };
 
 const PLATFORM_OPINIONS = [
-  [5, "Encontré una barbería cerca de mi trabajo y reservé en segundos. Me encanta poder pagar la mitad online y el resto en el local."],
-  [5, "Como dueña de un salón, BOOKIFY me ordenó las citas y ya no tengo reservas perdidas por WhatsApp."],
-  [4, "Muy fácil de usar desde el celular. Me gustaría ver aún más spas en mi distrito."],
-  [5, "El temporizador de pago de 5 minutos evita que alguien se quede con mi horario. Todo muy claro."],
-  [5, "Pude comparar gimnasios por sus reseñas y precios de membresía antes de inscribirme."],
-  [4, "Buena experiencia: reservé un masaje para mi mamá y pagué todo online sin complicaciones."]
+  [5, "I found a barbershop near my office and booked it in seconds. I love paying half online and the rest at the shop."],
+  [5, "As a salon owner, BOOKIFY organized my appointments and I no longer lose bookings over WhatsApp."],
+  [4, "Very easy to use on my phone. I would love to see even more spas in my district."],
+  [5, "The 5-minute payment timer stops anyone from holding my time slot. Everything is very clear."],
+  [5, "I could compare gyms by their reviews and membership prices before signing up."],
+  [4, "Great experience: I booked a massage for my mom and paid everything online with no hassle."]
 ];
 
 function pick(list, seed) {
@@ -191,7 +191,7 @@ async function main() {
 
     const gallery = [];
     for (const [i, photo] of [coverName, ...galleryNames].entries()) {
-      gallery.push({ business_id: id, storage_path: await upload(id, "gallery", path.join(ASSETS, "photos", `${photo}.jpg`), "image/jpeg"), caption: i === 0 ? "Nuestro espacio" : null, sort_order: i });
+      gallery.push({ business_id: id, storage_path: await upload(id, "gallery", path.join(ASSETS, "photos", `${photo}.jpg`), "image/jpeg"), caption: i === 0 ? "Our space" : null, sort_order: i });
     }
     const { error: galleryError } = await supabase.from("business_images").insert(gallery);
     if (galleryError) throw galleryError;

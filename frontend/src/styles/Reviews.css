@@ -103,3 +103,51 @@
   .reason-cell { max-width: none; }
   .detail-logo { width: 52px; height: 52px; }
 }
+
+/* ---- Review design v2: cards, filters and testimonials ---- */
+.review-avatar { font-weight: 800; letter-spacing: .02em; }
+.review-card { position: relative; padding: 18px 18px 16px; border-radius: 18px; box-shadow: 0 1px 0 rgba(25,48,44,.04); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.review-card:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(25,48,44,.08); border-color: #d6e2dc; }
+.review-card header { align-items: center; }
+.review-who { display: grid; min-width: 0; }
+.review-who strong { font-size: .95rem; color: var(--ink); }
+.review-score { display: inline-flex; align-items: center; gap: 3px; font-size: .78rem; font-weight: 800; padding: 3px 9px; border-radius: 999px; background: #fff6dc; color: #7a5600; }
+.review-score svg { fill: var(--star); stroke: var(--star); }
+.review-score.score-3, .review-score.score-2, .review-score.score-1 { background: #f3f4f3; color: #5f6b72; }
+.review-text p { margin: 0; color: #34434b; line-height: 1.6; font-size: .95rem; }
+.review-text p.clamped { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+.review-more { border: 0; background: none; padding: 4px 0 0; color: var(--forest); font-weight: 700; font-size: .85rem; cursor: pointer; }
+.review-more:hover { text-decoration: underline; }
+.review-empty { font-style: italic; margin: 0; }
+.review-card footer { padding-top: 10px; border-top: 1px dashed var(--line); }
+
+.rating-bar { width: 100%; border: 0; background: none; padding: 3px 6px; border-radius: 10px; font: inherit; cursor: pointer; text-align: left; transition: background .15s ease; }
+.rating-bar:hover:not(:disabled) { background: #f6f8f6; }
+.rating-bar:disabled { cursor: default; opacity: .55; }
+.rating-bar.active { background: #fff6dc; }
+.rating-bar.active i { background: #c98a00; }
+
+.review-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.review-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.review-chips button { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 6px 12px; border-radius: 999px; font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .15s ease; }
+.review-chips button svg { fill: var(--star); stroke: var(--star); }
+.review-chips button:hover { border-color: #b9d3c9; }
+.review-chips button.active { background: var(--forest); border-color: var(--forest); color: #fff; }
+.review-chips button.active svg { fill: #ffd76a; stroke: #ffd76a; }
+.review-sort { display: inline-flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); }
+.review-sort select { border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font: inherit; color: var(--ink); background: #fff; }
+
+.testimonial-card { position: relative; overflow: hidden; padding: 26px 24px 22px; border-radius: 22px; transition: transform .18s ease, box-shadow .18s ease; }
+.testimonial-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(25,48,44,.10); }
+.testimonial-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--forest), var(--accent)); }
+.testimonial-quote { position: absolute; top: 4px; right: 18px; font-family: Georgia, 'Times New Roman', serif; font-size: 84px; line-height: 1; color: #e7efe9; pointer-events: none; }
+.testimonial-card blockquote .review-text p { font-size: 1rem; color: #2a3940; }
+.testimonial-card figcaption { margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+@media (max-width: 720px) {
+  .review-toolbar { flex-direction: column; align-items: flex-start; }
+  .testimonial-quote { font-size: 64px; }
+}
+.testimonial-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1024px) { .testimonial-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .testimonial-grid { grid-template-columns: 1fr; } }

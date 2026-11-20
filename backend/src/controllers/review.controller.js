@@ -37,9 +37,9 @@ function dbError(res, error, label) {
 async function loadAuthors(rows) {
   const ids = [...new Set(rows.map((r) => r.user_id))];
   if (ids.length === 0) return new Map();
-  const { data, error } = await supabase.from("users").select("id, full_name").in("id", ids);
+  const { data, error } = await supabase.from("users").select("id, full_name, role").in("id", ids);
   if (error) throw error;
-  return new Map((data || []).map((u) => [String(u.id), publicName(u.full_name)]));
+  return new Map((data || []).map((u) => [String(u.id), { name: publicName(u.full_name), role: u.role === "BUSINESS_OWNER" ? "Business owner" : "Client" }]));
 }
 
 function summarize(rows) {
@@ -85,16 +85,22 @@ async function listBusinessReviews(req, res) {
 
   const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
   const limit = Math.min(MAX_LIMIT, Math.max(1, Number.parseInt(req.query.limit, 10) || 6));
+  const ratingFilter = readRating(req.query.rating);
+  const sort = ["highest", "lowest"].includes(req.query.sort) ? req.query.sort : "newest";
+
+  let listQuery = supabase
+    .from("business_reviews")
+    .select("id, user_id, rating, comment, is_verified, created_at, updated_at", { count: "exact" })
+    .eq("business_id", businessId);
+  if (ratingFilter) listQuery = listQuery.eq("rating", ratingFilter);
+  listQuery = sort === "newest"
+    ? listQuery.order("created_at", { ascending: false })
+    : listQuery.order("rating", { ascending: sort === "lowest" }).order("created_at", { ascending: false });
 
   // Ratings only (small) for the summary; the page of reviews separately
   const [all, pageResult] = await Promise.all([
     supabase.from("business_reviews").select("rating").eq("business_id", businessId),
-    supabase
-      .from("business_reviews")
-      .select("id, user_id, rating, comment, is_verified, created_at, updated_at", { count: "exact" })
-      .eq("business_id", businessId)
-      .order("created_at", { ascending: false })
-      .range((page - 1) * limit, page * limit - 1)
+    listQuery.range((page - 1) * limit, page * limit - 1)
   ]);
 
   if (all.error) return dbError(res, all.error, "Business reviews summary error");
@@ -111,10 +117,11 @@ async function listBusinessReviews(req, res) {
         rating: r.rating,
         comment: r.comment,
         is_verified: r.is_verified,
-        author: authors.get(String(r.user_id)) || "BOOKIFY user",
+        author: authors.get(String(r.user_id))?.name || "BOOKIFY user",
         created_at: r.created_at,
         edited: r.updated_at && r.created_at && new Date(r.updated_at) - new Date(r.created_at) > 60000
       })),
+      filter: { rating: ratingFilter, sort },
       pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) }
     });
   } catch (error) {
@@ -269,7 +276,8 @@ async function listPlatformReviews(req, res) {
         id: r.id,
         rating: r.rating,
         comment: r.comment,
-        author: authors.get(String(r.user_id)) || "BOOKIFY user",
+        author: authors.get(String(r.user_id))?.name || "BOOKIFY user",
+        role: authors.get(String(r.user_id))?.role || "Client",
         created_at: r.created_at
       }))
     });

@@ -21,8 +21,8 @@ const VUS = Number(__ENV.VUS || 5);
 // Per-request limit: a request slower than this counts as failed
 const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || "30s";
 
-if (!Number.isInteger(ACCOUNT_COUNT) || ACCOUNT_COUNT < 1 || ACCOUNT_COUNT > 10000) {
-  throw new Error("ACCOUNT_COUNT must be between 1 and 10000");
+if (!Number.isInteger(ACCOUNT_COUNT) || ACCOUNT_COUNT < 1 || ACCOUNT_COUNT > 500000) {
+  throw new Error("ACCOUNT_COUNT must be between 1 and 500000");
 }
 
 const LOAD_TEST_HEADERS = __ENV.LOAD_TEST_KEY

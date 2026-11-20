@@ -13,14 +13,17 @@
     # Cuantas cuentas se registran en 2 segundos
     powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2
 
-    # Registro por lotes de 50 cuentas por peticion (lo mas rapido)
-    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2 -BatchSize 50
+    # Registro por lotes de 500 cuentas por peticion (lo mas rapido)
+    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2 -BatchSize 500
+
+    # Medio millon de cuentas
+    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 500000 -BatchSize 500
 
     # Registro + login + perfil de cada cuenta (mas lento, prueba que cada cuenta funciona)
     powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Full -VirtualUsers 50
 #>
 param(
-  [ValidateRange(1, 10000)]
+  [ValidateRange(1, 500000)]
   [int]$Accounts = 5000,
 
   [ValidateRange(1, 1000)]
@@ -33,8 +36,8 @@ param(
   # Ademas del registro, hace login y lee el perfil de cada cuenta
   [switch]$Full,
 
-  # 0 = una cuenta por peticion. 1-50 = registro por lotes (/api/auth/register-batch)
-  [ValidateRange(0, 50)]
+  # 0 = una cuenta por peticion. 1-500 = registro por lotes (/api/auth/register-batch)
+  [ValidateRange(0, 500)]
   [int]$BatchSize = 0,
 
   [string]$LoadTestKey = $env:LOAD_TEST_KEY,

@@ -4,7 +4,7 @@ import { Counter } from "k6/metrics";
 import exec from "k6/execution";
 
 // BOOKIFY - batch registration (load tests only).
-// Each iteration sends BATCH_SIZE new accounts to POST /api/auth/register-batch,
+// Each iteration sends BATCH_SIZE (up to 500) new accounts to POST /api/auth/register-batch,
 // which validates them, hashes each password and stores the whole batch with
 // one database insert. Needs the load-test key (the route is 404 without it).
 //
@@ -14,16 +14,16 @@ import exec from "k6/execution";
 
 const BASE_URL = __ENV.BASE_URL || "http://localhost:3000";
 const ACCOUNT_COUNT = Number(__ENV.ACCOUNT_COUNT || 100);
-const BATCH_SIZE = Number(__ENV.BATCH_SIZE || 50);
+const BATCH_SIZE = Number(__ENV.BATCH_SIZE || 500);
 const VUS = Number(__ENV.VUS || 20);
-const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || "30s";
+const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || "120s";
 
-if (!Number.isInteger(ACCOUNT_COUNT) || ACCOUNT_COUNT < 1 || ACCOUNT_COUNT > 20000) {
-  throw new Error("ACCOUNT_COUNT must be between 1 and 20000");
+if (!Number.isInteger(ACCOUNT_COUNT) || ACCOUNT_COUNT < 1 || ACCOUNT_COUNT > 500000) {
+  throw new Error("ACCOUNT_COUNT must be between 1 and 500000");
 }
 
-if (!Number.isInteger(BATCH_SIZE) || BATCH_SIZE < 1 || BATCH_SIZE > 50) {
-  throw new Error("BATCH_SIZE must be between 1 and 50");
+if (!Number.isInteger(BATCH_SIZE) || BATCH_SIZE < 1 || BATCH_SIZE > 500) {
+  throw new Error("BATCH_SIZE must be between 1 and 500");
 }
 
 if (!__ENV.LOAD_TEST_KEY) {
@@ -41,7 +41,7 @@ export const options = {
       vus: Math.min(VUS, BATCHES),
       iterations: BATCHES,
       // Total time limit, e.g. MAX_DURATION=2s
-      maxDuration: __ENV.MAX_DURATION || "20m",
+      maxDuration: __ENV.MAX_DURATION || "2h",
       // GRACEFUL_STOP=0s cuts exactly at MAX_DURATION
       gracefulStop: __ENV.GRACEFUL_STOP || "30s"
     }

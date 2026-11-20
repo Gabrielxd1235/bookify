@@ -84,10 +84,18 @@ app.use(cors({
   ]
 }));
 
-// Parse JSON request bodies
-app.use(express.json({
-  limit: "10kb"
-}));
+// Parse JSON request bodies (10 KB). Only the load-test batch registration,
+// and only with the load-test key, may send up to 256 KB (500 accounts).
+const parseJson = express.json({ limit: "10kb" });
+const parseBatchJson = express.json({ limit: "256kb" });
+
+app.use((req, res, next) => {
+  if (req.path === "/api/auth/register-batch" && isLoadTestRequest(req)) {
+    return parseBatchJson(req, res, next);
+  }
+
+  return parseJson(req, res, next);
+});
 
 // Parse authentication cookies
 app.use(cookieParser());

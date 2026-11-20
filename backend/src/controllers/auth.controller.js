@@ -423,12 +423,12 @@ const getProfile = (req, res) => {
 };
 
 // POST /api/auth/register-batch  (load tests only)
-// Registers up to 50 synthetic accounts in one request and one database
+// Registers up to 500 synthetic accounts in one request and one database
 // insert. Hidden (404) unless the request carries the load-test key, and it
 // only accepts reserved loadtest-*@example.test emails, always as CLIENT.
 // Every account is validated like a normal registration and gets its own
 // bcrypt hash (cost 4, as other load-test accounts).
-const BATCH_MAX = 50;
+const BATCH_MAX = 500;
 const LOAD_TEST_EMAIL = /^loadtest-[a-z0-9-]+@example\.test$/;
 
 const registerBatch = async (req, res) => {

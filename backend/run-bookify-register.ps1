@@ -1,26 +1,30 @@
 <#
   BOOKIFY - Registro de cuentas nuevas con k6 contra Azure (un solo comando)
 
-  Registra cuentas por la API publica (POST /api/auth/register), abre el
-  dashboard de k6 en vivo y al final cuenta en Supabase cuantas quedaron
-  guardadas. Las cuentas son loadtest-reg<run>-NNNNN@example.test y se borran
-  con sql\cleanup-load-test-users.sql.
+  Registra cuentas, abre el dashboard de k6 en vivo y al final cuenta en
+  Supabase cuantas quedaron guardadas. Las cuentas son
+  loadtest-reg<run>-NNNNN@example.test y se borran con
+  sqlcleanup-load-test-users.sql (conserva las 5000 cuentas de login).
 
-  Uso (desde la carpeta backend):
-    # 5000 cuentas, lo mas rapido posible
-    powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key
+  Parametros (cualquier combinacion):
+    -Accounts      cuantas cuentas registrar (1 a 500000)
+    -Seconds       limite de tiempo en segundos (0 = sin limite)
+    -BatchSize     cuentas por peticion (1 a 2000). 0 = una por peticion
+    -VirtualUsers  peticiones simultaneas (por lotes: 20 por defecto)
+    -Full          registro + login + perfil (solo sin -BatchSize)
 
-    # Cuantas cuentas se registran en 2 segundos
-    powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2
+  Ejemplos (desde la carpeta backend):
+    # 100 000 cuentas, sin limite de tiempo
+    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 100000 -BatchSize 2000
 
-    # Registro por lotes de 500 cuentas por peticion (lo mas rapido)
-    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 6000 -Seconds 2 -BatchSize 500
+    # Medio millon con limite de 10 segundos (cuantas entran)
+    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 500000 -BatchSize 2000 -Seconds 10
 
-    # Medio millon de cuentas
-    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 500000 -BatchSize 500
+    # Cualquier cantidad y tiempo, p. ej. 250 000 en 5 segundos
+    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 250000 -BatchSize 2000 -Seconds 5
 
-    # Registro + login + perfil de cada cuenta (mas lento, prueba que cada cuenta funciona)
-    powershell -ExecutionPolicy Bypass -File .\run-bookify-register.ps1 -LoadTestKey $key -Full -VirtualUsers 50
+    # Una cuenta por peticion + login + perfil (prueba que cada cuenta funciona)
+    powershell -ExecutionPolicy Bypass -File .un-bookify-register.ps1 -LoadTestKey $key -Accounts 5000 -Full -VirtualUsers 50
 #>
 param(
   [ValidateRange(1, 500000)]
@@ -50,9 +54,9 @@ $BaseUrl = $BaseUrl.TrimEnd("/")
 $loadDir = Join-Path $PSScriptRoot "tests\load"
 $resultsDir = Join-Path $loadDir "results"
 $script = if ($BatchSize -gt 0) { "bookify-register-batch.js" } else { "bookify-register-users.js" }
-# Batches carry up to 500 accounts each: 5 simultaneous users is the stable
-# maximum measured on Azure (~280 accounts/s, 0 % failures)
-if ($BatchSize -gt 0 -and -not $PSBoundParameters.ContainsKey("VirtualUsers")) { $VirtualUsers = 5 }
+# Batches of up to 2000 gzip-compressed accounts: 20 simultaneous requests
+# reached ~14 000 accounts/s with 1 replica and ~21 500/s with 4 (20/11/2026)
+if ($BatchSize -gt 0 -and -not $PSBoundParameters.ContainsKey("VirtualUsers")) { $VirtualUsers = 20 }
 if ($BatchSize -gt 0 -and $Full) { Write-Host "Aviso: -Full no aplica al registro por lotes; se ignora." -ForegroundColor Yellow; $Full = $false }
 
 function Stop-WithMessage([string]$message, [string]$hint) {
